@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitip Makan Realtime PRO 🔥</title>
+    <title>Nitip Makan Realtime V3 (Full Sync) 🔥</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body { background-color: #f5f5f5; font-family: 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 950px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         /* Animasi Flash */
         @keyframes flash { 0% { background-color: #e3f2fd; } 100% { background-color: transparent; } }
@@ -20,65 +20,86 @@
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #f1c40f; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Editable Input */
-        .input-edit { border: 1px dashed #ccc; background: #fafafa; padding: 2px 5px; width: 100%; border-radius: 4px; font-size: 0.9em; }
-        .input-edit:focus { border-color: #3273dc; outline: none; background: white; }
+        /* Editable Input (Menu & Harga) */
+        .input-edit { 
+            border: 1px dashed #dbdbdb; 
+            background: #fafafa; 
+            padding: 4px 8px; 
+            width: 100%; 
+            border-radius: 4px; 
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+        .input-edit:focus { border-color: #3273dc; outline: none; background: white; box-shadow: 0 0 0 2px rgba(50,115,220,0.1); }
 
-        /* Input Pembayaran (Uang) */
-        .input-pay { border: 1px solid #48c774; color: #48c774; font-weight: bold; width: 120px; }
-        .input-pay:focus { border-color: #48c774; box-shadow: 0 0 0 0.125em rgba(72,199,116,0.25); }
+        /* Input Pembayaran */
+        .input-pay { border: 1px solid #48c774; color: #48c774; font-weight: bold; width: 100%; max-width: 140px; }
 
-        /* Status Kembalian */
-        .has-text-success-dark { color: #257942 !important; font-weight: bold; }
-        .has-text-danger-dark { color: #cc0f35 !important; font-weight: bold; }
-
-        /* History Section */
-        .history-section { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #bdc3c7; }
-        .history-item { cursor: pointer; border-bottom: 1px solid #ddd; padding: 8px; background: white; margin-bottom: 2px; }
-        .history-item:hover { background: #f0f8ff; }
+        /* History Item */
+        .history-section { background: #f0f3f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
+        .history-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 10px; margin-bottom: 5px; border-radius: 4px; border-left: 4px solid #3273dc; cursor: pointer; transition: 0.2s;
+        }
+        .history-item:hover { transform: translateX(3px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         /* Print Mode */
         @media print {
             .no-print, .history-section { display: none !important; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
-            .input-edit, .input-pay { border: none; background: transparent; padding: 0; font-weight: bold; }
+            .input-edit, .input-pay { border: none; background: transparent; padding: 0; font-weight: bold; width: auto; }
             .buttons { display: none; }
+            /* Sembunyikan tombol delete saat print */
+            .btn-delete { display: none; }
         }
         body.pdf-mode .no-print, body.pdf-mode .history-section { display: none !important; }
-        body.pdf-mode .input-edit, body.pdf-mode .input-pay { border: none; background: transparent; padding: 0; font-weight: bold; }
+        body.pdf-mode .input-edit, body.pdf-mode .input-pay { border: none; background: transparent; padding: 0; font-weight: bold; width: auto; }
+        body.pdf-mode .btn-delete { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container" id="contentArea">
     <h1 class="title has-text-centered has-text-warning-dark mb-5">
-        <i class="fa-solid fa-fire"></i> Nitip Makan Realtime PRO
+        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V3 Sync</span>
     </h1>
 
     <div class="history-section no-print">
-        <h6 class="title is-6 mb-2"><i class="fa-solid fa-folder-open"></i> Simpan / Load Riwayat</h6>
+        <h6 class="title is-6 mb-3"><i class="fa-solid fa-cloud"></i> Riwayat Tersimpan (Server)</h6>
         <div class="field has-addons">
             <div class="control is-expanded">
-                <input class="input is-small" type="text" id="historyTitle" placeholder="Judul (ex: Jumat Berkah)">
+                <input class="input is-small" type="text" id="historyTitle" placeholder="Judul (ex: Makan Siang Jumat)">
             </div>
             <div class="control">
-                <button class="button is-small is-success" onclick="saveHistoryLocally()">
-                    <i class="fa-solid fa-save"></i>&nbsp; Simpan
+                <button class="button is-small is-link" id="btnSaveHistory">
+                    <i class="fa-solid fa-save"></i>&nbsp; Simpan ke Cloud
                 </button>
             </div>
         </div>
-        <div id="historyListContainer" style="max-height: 100px; overflow-y: auto;"></div>
+        <div id="historyListContainer" style="max-height: 150px; overflow-y: auto;">
+            <p class="has-text-centered is-size-7 my-2"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Riwayat...</p>
+        </div>
     </div>
 
     <div class="box no-print" style="background:#fffdf0; border:1px solid #ffeebb;">
         <div class="columns is-multiline">
-            <div class="column is-3"><input class="input" type="text" id="name" placeholder="Nama"></div>
-            <div class="column is-3"><input class="input" type="text" id="item" placeholder="Menu"></div>
-            <div class="column is-3"><input class="input" type="text" id="note" placeholder="Catatan"></div>
             <div class="column is-3">
+                <label class="label is-small">Nama</label>
+                <input class="input" type="text" id="name" placeholder="Nama">
+            </div>
+            <div class="column is-3">
+                <label class="label is-small">Menu</label>
+                <input class="input" type="text" id="item" placeholder="Menu">
+            </div>
+            <div class="column is-3">
+                <label class="label is-small">Catatan</label>
+                <input class="input" type="text" id="note" placeholder="Pedas/Tidak">
+            </div>
+            <div class="column is-3">
+                <label class="label is-small">Harga</label>
                 <div class="field has-addons">
                     <p class="control is-expanded">
-                        <input class="input" type="number" id="price" placeholder="Harga">
+                        <input class="input" type="text" id="price" placeholder="0" onkeyup="formatRupiahInput(this)">
                     </p>
                     <p class="control">
                         <button class="button is-warning" id="btnSubmit">
@@ -95,14 +116,15 @@
     </div>
 
     <div class="table-container">
-        <h5 class="subtitle is-6 mb-2">🛒 Daftar Pesanan</h5>
+        <h5 class="subtitle is-6 mb-2">🛒 Daftar Pesanan (Live Edit)</h5>
         <table class="table is-fullwidth is-striped is-hoverable">
             <thead>
                 <tr>
-                    <th>Nama</th>
-                    <th>Menu</th>
-                    <th style="width: 120px;">Harga (Edit)</th>
-                    <th class="no-print has-text-centered" style="width: 50px;">Aksi</th>
+                    <th style="width: 20%;">Nama</th>
+                    <th style="width: 30%;">Menu (Edit)</th>
+                    <th style="width: 20%;">Catatan</th>
+                    <th style="width: 20%;">Harga (Edit)</th>
+                    <th class="no-print has-text-centered" style="width: 10%;">Aksi</th>
                 </tr>
             </thead>
             <tbody id="listBody"></tbody>
@@ -132,7 +154,7 @@
                 <thead>
                     <tr>
                         <th>Nama Pemesan</th>
-                        <th>Total Tagihan</th>
+                        <th>Tagihan (+Pajak)</th>
                         <th>Bayar (Tunai)</th>
                         <th>Status Kembalian</th>
                     </tr>
@@ -177,7 +199,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, getDocs, writeBatch, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     // --- CONFIG FIREBASE AGAN ---
     const firebaseConfig = {
@@ -191,12 +213,33 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const dbCollection = collection(db, "orders"); 
+    const dbOrders = collection(db, "orders"); 
+    const dbHistory = collection(db, "history_sessions"); // Koleksi baru buat History Cloud
 
-    let globalOrders = []; // Menyimpan data dari server
+    let globalOrders = [];
 
-    // --- 1. REALTIME LISTENER (JANTUNG APLIKASI) ---
-    const q = query(dbCollection, orderBy("timestamp", "asc"));
+    // ==========================================
+    // 1. HELPERS FORMATTER (TITIK RUPIAH)
+    // ==========================================
+    
+    // Format Visual (10000 -> 10.000) untuk Input
+    window.formatRupiahInput = function(el) {
+        let val = el.value.replace(/[^0-9]/g, ''); // Hapus non-angka
+        el.value = val !== "" ? parseInt(val, 10).toLocaleString('id-ID') : "";
+    }
+
+    // Bersihkan Titik (10.000 -> 10000) untuk hitungan
+    function cleanToNumber(str) {
+        if (!str) return 0;
+        // Kalau inputnya number murni, langsung return
+        if (typeof str === 'number') return str;
+        return parseFloat(str.replace(/\./g, '')) || 0;
+    }
+
+    // ==========================================
+    // 2. REALTIME LISTENER (ACTIVE ORDERS)
+    // ==========================================
+    const q = query(dbOrders, orderBy("timestamp", "asc"));
     
     onSnapshot(q, (snapshot) => {
         document.getElementById('loading').style.display = 'none';
@@ -205,73 +248,102 @@
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             data.id = docSnap.id; 
-            // Default bayar 0 jika belum ada field 'paid'
             if(data.paid === undefined) data.paid = 0; 
             globalOrders.push(data);
         });
 
         renderMainTable();
-        renderSummary(); // Render tabel kasir juga
+        renderSummary(); 
     });
 
-    // --- 2. RENDER TABLE UTAMA ---
+    // ==========================================
+    // 3. RENDER TABLE (DENGAN EDIT MENU)
+    // ==========================================
     function renderMainTable() {
         const tbody = document.getElementById('listBody');
         tbody.innerHTML = '';
         
         if (globalOrders.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" class="has-text-centered has-text-grey">Belum ada pesanan.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="has-text-centered has-text-grey">Belum ada pesanan.</td></tr>`;
             return;
         }
 
         globalOrders.forEach(data => {
-            const noteDisplay = data.note ? `<br><small class="has-text-grey"><i>(${data.note})</i></small>` : '';
             const tr = document.createElement('tr');
             tr.className = "row-update";
             
+            // Format Harga untuk value input (ada titiknya)
+            const priceFormatted = data.price.toLocaleString('id-ID');
+
             tr.innerHTML = `
-                <td><strong>${data.name}</strong></td>
-                <td>${data.item} ${noteDisplay}</td>
+                <td style="vertical-align:middle;"><strong>${data.name}</strong></td>
                 <td>
-                    <input type="number" class="input input-edit" value="${data.price}" id="price-${data.id}">
+                    <input type="text" class="input input-edit input-item" value="${data.item}" id="item-${data.id}">
                 </td>
-                <td class="no-print has-text-centered">
-                    <button class="button is-small is-danger is-inverted btn-delete" data-id="${data.id}">X</button>
+                <td style="vertical-align:middle;">
+                    <span class="is-size-7 has-text-grey">${data.note || '-'}</span>
+                </td>
+                <td>
+                    <div style="display:flex; align-items:center;">
+                        <span class="is-size-7 mr-1">Rp</span>
+                        <input type="text" inputmode="numeric" class="input input-edit input-price" 
+                               value="${priceFormatted}" 
+                               id="price-${data.id}">
+                    </div>
+                </td>
+                <td class="no-print has-text-centered" style="vertical-align:middle;">
+                    <button class="button is-small is-danger is-inverted btn-delete" data-id="${data.id}"><i class="fa-solid fa-times"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
 
-            // Listener Edit Harga
-            tr.querySelector(`#price-${data.id}`).addEventListener('change', (e) => {
-                updateDoc(doc(db, "orders", data.id), { price: parseInt(e.target.value) || 0 });
+            // --- EVENT LISTENERS UNTUK LIVE EDIT ---
+
+            // 1. Edit Menu (Nama Makanan)
+            const inputItem = tr.querySelector(`#item-${data.id}`);
+            inputItem.addEventListener('change', (e) => {
+                updateDoc(doc(db, "orders", data.id), { item: e.target.value });
             });
-            // Listener Hapus
+
+            // 2. Edit Harga (Pakai Format Rupiah)
+            const inputPrice = tr.querySelector(`#price-${data.id}`);
+            
+            // Saat mengetik, format visual (tambah titik)
+            inputPrice.addEventListener('keyup', (e) => {
+                formatRupiahInput(e.target);
+            });
+
+            // Saat selesai ketik (change), simpan angka murni ke DB
+            inputPrice.addEventListener('change', (e) => {
+                const cleanPrice = cleanToNumber(e.target.value);
+                updateDoc(doc(db, "orders", data.id), { price: cleanPrice });
+            });
+
+            // 3. Hapus
             tr.querySelector(`.btn-delete`).addEventListener('click', () => {
-                if(confirm("Hapus?")) deleteDoc(doc(db, "orders", data.id));
+                if(confirm("Hapus pesanan ini?")) deleteDoc(doc(db, "orders", data.id));
             });
         });
     }
 
-    // --- 3. RENDER SUMMARY (KASIR + KEMBALIAN) ---
-    // Fungsi ini dipanggil setiap ada update dari Firebase ATAU ganti Pajak
+    // ==========================================
+    // 4. RENDER SUMMARY (KASIR)
+    // ==========================================
     window.renderSummary = function() {
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
         const tbody = document.getElementById('summaryBody');
         tbody.innerHTML = '';
         
-        // Grouping data by Name
         const grouped = {};
         let totalBillGlobal = 0;
         let totalCashGlobal = 0;
 
         globalOrders.forEach(o => {
-            // Gunakan nama lowercase sebagai key
             const key = o.name.toLowerCase();
             if(!grouped[key]) grouped[key] = { displayName: o.name, total: 0, paid: 0, ids: [] };
-            
             grouped[key].total += o.price;
-            grouped[key].paid += (o.paid || 0); // Ambil data bayar dari server
-            grouped[key].ids.push(o.id); // Simpan ID dokumen buat update pembayaran nanti
+            grouped[key].paid += (o.paid || 0); 
+            grouped[key].ids.push(o.id); 
         });
 
         for (const key in grouped) {
@@ -290,38 +362,37 @@
                 else statusHtml = `<span class="has-text-danger-dark">Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}</span>`;
             }
 
+            // Format Input Bayar biar ada titiknya
+            const paidFormatted = person.paid > 0 ? person.paid.toLocaleString('id-ID') : '';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${person.displayName}</strong></td>
-                <td>Rp ${finalBill.toLocaleString('id-ID')} <small class="has-text-grey">(${person.total} + tax)</small></td>
+                <td style="vertical-align:middle;"><strong>${person.displayName}</strong></td>
+                <td style="vertical-align:middle;">Rp ${finalBill.toLocaleString('id-ID')}</td>
                 <td>
                     <div class="field has-addons">
                         <p class="control">
-                            <input type="number" class="input input-pay is-small" value="${person.paid === 0 ? '' : person.paid}" placeholder="0">
+                            <input type="text" inputmode="numeric" class="input input-pay is-small" 
+                                   value="${paidFormatted}" placeholder="0">
                         </p>
                     </div>
                 </td>
-                <td>${statusHtml}</td>
+                <td style="vertical-align:middle;">${statusHtml}</td>
             `;
             tbody.appendChild(tr);
 
-            // Listener Input Pembayaran (Update Server)
-            // Logic: Saat input berubah, kita update SEMUA order milik orang itu.
-            // Tapi karena struktur DB kita per-item, kita update 'paid' di item pertama saja?
-            // ATAU: Kita bagi rata?
-            // SOLUSI SIMPEL: Kita update item pertama milik orang tersebut dengan total bayarnya.
-            // Sisanya 0. Ini supaya total paid di server sesuai.
-            
             const inputPay = tr.querySelector('.input-pay');
+            
+            // Format saat ngetik uang bayar
+            inputPay.addEventListener('keyup', (e) => formatRupiahInput(e.target));
+
+            // Simpan ke DB saat enter/pindah
             inputPay.addEventListener('change', async (e) => {
-                const newPaid = parseInt(e.target.value) || 0;
-                
-                // Reset semua order orang ini jadi 0 dulu
+                const newPaid = cleanToNumber(e.target.value);
                 const batch = writeBatch(db);
                 person.ids.forEach(id => {
                     batch.update(doc(db, "orders", id), { paid: 0 });
                 });
-                // Set order pertama jadi nominal bayar penuh (biar gampang nyimpennya)
                 if(person.ids.length > 0) {
                     batch.update(doc(db, "orders", person.ids[0]), { paid: newPaid });
                 }
@@ -329,7 +400,6 @@
             });
         }
 
-        // Update 3 Kotak Duit
         document.getElementById('grandTotalBill').innerText = "Rp " + totalBillGlobal.toLocaleString('id-ID');
         document.getElementById('grandTotalCash').innerText = "Rp " + totalCashGlobal.toLocaleString('id-ID');
         
@@ -347,104 +417,131 @@
         }
     }
 
-    // --- 4. TAMBAH DATA ---
+    // ==========================================
+    // 5. SUBMIT DATA
+    // ==========================================
     document.getElementById('btnSubmit').addEventListener('click', async () => {
         const name = document.getElementById('name').value;
         const item = document.getElementById('item').value;
         const note = document.getElementById('note').value;
-        const price = document.getElementById('price').value;
+        const priceStr = document.getElementById('price').value;
+
+        // Bersihkan harga dari titik sebelum kirim
+        const price = cleanToNumber(priceStr);
 
         if(!name || !item || !price) { alert("Data kurang!"); return; }
 
         try {
-            await addDoc(dbCollection, {
+            await addDoc(dbOrders, {
                 name: name, item: item, note: note, price: parseInt(price), paid: 0, timestamp: Date.now() 
             });
-            document.getElementById('item').value = ''; document.getElementById('note').value = ''; document.getElementById('price').value = '';
+            document.getElementById('item').value = ''; 
+            document.getElementById('note').value = ''; 
+            document.getElementById('price').value = '';
         } catch (e) { alert("Error: " + e.message); }
     });
 
-    // --- 5. RESET DATABASE ---
-    document.getElementById('btnReset').addEventListener('click', async () => {
-        if(!confirm("HAPUS SEMUA DATA DI SERVER?")) return;
-        const q = query(dbCollection);
-        const snapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        snapshot.forEach((doc) => batch.delete(doc.ref));
-        await batch.commit();
+    // ==========================================
+    // 6. HISTORY DI CLOUD (Firebase)
+    // ==========================================
+    
+    // Load History List dari Firebase
+    const qHistory = query(dbHistory, orderBy("savedAt", "desc"));
+    onSnapshot(qHistory, (snapshot) => {
+        const container = document.getElementById('historyListContainer');
+        container.innerHTML = '';
+        
+        if(snapshot.empty) {
+            container.innerHTML = '<p class="has-text-grey is-size-7">Belum ada riwayat tersimpan.</p>';
+            return;
+        }
+
+        snapshot.forEach(docSnap => {
+            const h = docSnap.data();
+            const div = document.createElement('div');
+            div.className = "history-item";
+            div.innerHTML = `
+                <div>
+                    <strong>${h.title}</strong>
+                    <br><span class="is-size-7 has-text-grey">${h.date} • ${h.orders.length} item</span>
+                </div>
+                <div>
+                    <button class="button is-small is-info is-light btn-load">Load</button>
+                    <button class="button is-small is-danger is-light btn-del-hist"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(div);
+
+            // Event Load
+            div.querySelector('.btn-load').addEventListener('click', () => loadHistoryToActive(h));
+            
+            // Event Delete History
+            div.querySelector('.btn-del-hist').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(confirm("Hapus riwayat ini permanen?")) deleteDoc(doc(db, "history_sessions", docSnap.id));
+            });
+        });
     });
 
-    // --- FITUR HISTORY (LOKAL STORAGE + RESTORE KE SERVER) ---
-    window.saveHistoryLocally = function() {
+    // Save History ke Firebase
+    document.getElementById('btnSaveHistory').addEventListener('click', async () => {
         const title = document.getElementById('historyTitle').value;
-        if(!title) { alert("Judul kosong!"); return; }
+        if(!title) { alert("Judul belum diisi!"); return; }
         if(globalOrders.length === 0) { alert("Data kosong!"); return; }
-        
+
         const saveData = {
-            id: Date.now(),
             title: title,
             date: new Date().toLocaleDateString('id-ID'),
-            orders: globalOrders, // Simpan state saat ini
+            savedAt: Date.now(),
+            orders: globalOrders,
             tax: document.getElementById('taxPercent').value
         };
 
-        let history = JSON.parse(localStorage.getItem('nitip_realtime_hist') || "[]");
-        history.unshift(saveData);
-        localStorage.setItem('nitip_realtime_hist', JSON.stringify(history));
-        alert("Riwayat tersimpan di HP ini!");
-        loadHistoryUI();
-    }
+        try {
+            await addDoc(dbHistory, saveData);
+            alert("Riwayat berhasil disimpan ke Cloud! Semua orang bisa lihat.");
+            document.getElementById('historyTitle').value = '';
+        } catch(e) { alert("Gagal simpan: " + e.message); }
+    });
 
-    window.loadHistoryUI = function() {
-        let history = JSON.parse(localStorage.getItem('nitip_realtime_hist') || "[]");
-        const container = document.getElementById('historyListContainer');
-        if(history.length === 0) { container.innerHTML = '<small class="has-text-grey">Belum ada.</small>'; return; }
-        
-        let html = '';
-        history.forEach((h, index) => {
-            html += `<div class="history-item is-size-7" onclick="restoreHistory(${index})">
-                <strong>${h.title}</strong> <span class="has-text-grey">(${h.date} • ${h.orders.length} item)</span>
-                <span class="tag is-info is-light is-pulled-right">Load</span>
-            </div>`;
-        });
-        container.innerHTML = html;
-    }
+    // Fungsi Load (Timpa Data Aktif)
+    async function loadHistoryToActive(historyData) {
+        if(!confirm(`Load "${historyData.title}"? Data aktif sekarang akan diganti!`)) return;
 
-    // Fungsi Restore: Menghapus data server saat ini -> Mengganti dengan data history
-    window.restoreHistory = async function(index) {
-        if(!confirm("Load riwayat ini? Data di server saat ini akan diganti total!")) return;
-        
-        let history = JSON.parse(localStorage.getItem('nitip_realtime_hist') || "[]");
-        const data = history[index];
-
-        // 1. Hapus Data Server
-        const q = query(dbCollection);
-        const snapshot = await getDocs(q);
+        // 1. Hapus semua data aktif (Batch)
+        const qOrders = query(dbOrders);
+        const snapshot = await getDocs(qOrders);
         const batchDelete = writeBatch(db);
         snapshot.forEach((doc) => batchDelete.delete(doc.ref));
         await batchDelete.commit();
 
-        // 2. Upload Data History ke Server
-        // Kita tidak bisa pakai batch kalau data > 500, tapi asumsi pesanan < 500
+        // 2. Masukkan data history ke aktif (Batch)
         const batchAdd = writeBatch(db);
-        data.orders.forEach(o => {
-            const newRef = doc(dbCollection); // Auto ID baru
+        historyData.orders.forEach(o => {
+            const newRef = doc(dbOrders); 
             batchAdd.set(newRef, {
                 name: o.name, item: o.item, note: o.note || '', price: o.price, paid: o.paid || 0, timestamp: o.timestamp || Date.now()
             });
         });
         await batchAdd.commit();
         
-        document.getElementById('taxPercent').value = data.tax || 0;
+        document.getElementById('taxPercent').value = historyData.tax || 0;
     }
 
-    // Init history UI
-    loadHistoryUI();
-    
-    // Load local rekening
+    // ==========================================
+    // 7. RESET & LOCAL STORAGE
+    // ==========================================
+    document.getElementById('btnReset').addEventListener('click', async () => {
+        if(!confirm("YAKIN HAPUS SEMUA DATA AKTIF?")) return;
+        const q = query(dbOrders);
+        const snapshot = await getDocs(q);
+        const batch = writeBatch(db);
+        snapshot.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+    });
+
     if(localStorage.getItem('rekInfo')) document.getElementById('rekInfo').value = localStorage.getItem('rekInfo');
 
-    // Attach global functions
     window.copyWA = () => {
         const rek = document.getElementById('rekInfo').value;
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
@@ -486,7 +583,7 @@
     window.downloadPDF = () => {
         document.body.classList.add('pdf-mode');
         const el = document.getElementById('contentArea');
-        html2pdf().set({ margin: 10, filename: 'Rekap_Nitip_Realtime_Pro.pdf' }).from(el).save().then(() => {
+        html2pdf().set({ margin: 10, filename: 'Rekap_Nitip_Realtime_V3.pdf' }).from(el).save().then(() => {
             document.body.classList.remove('pdf-mode');
         });
     }
