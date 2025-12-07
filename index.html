@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitip Makan Realtime Final 🚀</title>
+    <title>Nitip Makan Pro V4 (Grouped)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -20,7 +20,7 @@
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #f1c40f; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Editable Input (Menu & Harga) */
+        /* Editable Input */
         .input-edit { 
             border: 1px dashed #dbdbdb; 
             background: #fafafa; 
@@ -28,78 +28,71 @@
             width: 100%; 
             border-radius: 4px; 
             font-size: 0.95em;
-            transition: all 0.2s;
         }
-        .input-edit:focus { border-color: #3273dc; outline: none; background: white; box-shadow: 0 0 0 2px rgba(50,115,220,0.1); }
+        .input-edit:focus { border-color: #3273dc; outline: none; background: white; }
 
         /* Input Pembayaran */
         .input-pay { border: 1px solid #48c774; color: #48c774; font-weight: bold; width: 100%; max-width: 140px; }
 
-        /* History Item */
+        /* History Section */
         .history-section { background: #f0f3f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
-        .history-item { 
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 10px; margin-bottom: 5px; border-radius: 4px; border-left: 4px solid #3273dc; cursor: pointer; transition: 0.2s;
-        }
-        .history-item:hover { transform: translateX(3px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .history-item { cursor: pointer; border-bottom: 1px solid #ddd; padding: 8px; background: white; margin-bottom: 2px; }
 
-        /* --- MODE PRINT & PDF (CLEAN LOOK) --- */
-        /* CSS ini bikin kotak input jadi transparan pas diprint/pdf */
+        /* --- MODE PRINT & PDF (BORDERS TEBAL) --- */
         @media print {
             .no-print, .history-section { display: none !important; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             
+            /* HILANGKAN INPUT BOX SAAT PRINT */
             .input-edit, .input-pay { 
                 border: none !important; 
-                background: transparent !important; /* HILANGKAN BLOK WARNA */
+                background: transparent !important; 
                 box-shadow: none !important;
                 padding: 0 !important; 
                 font-weight: 600; 
-                width: auto;
             }
-            .buttons { display: none; }
-            .btn-delete { display: none; }
+            .buttons, .btn-delete { display: none; }
             
-            /* Sembunyikan placeholder di print */
-            ::placeholder { color: transparent; }
+            /* BORDER KOTAK-KOTAK TEGAS */
+            table.table { border: 1px solid #000 !important; }
+            table.table th, table.table td {
+                border: 1px solid #000 !important;
+                padding: 8px !important;
+                color: #000 !important;
+            }
         }
 
-        /* Logic khusus PDF Mode */
+        /* PDF MODE Logic */
         body.pdf-mode .no-print, body.pdf-mode .history-section { display: none !important; }
-        body.pdf-mode .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
-        
         body.pdf-mode .input-edit, body.pdf-mode .input-pay { 
-            border: none !important; 
-            background: transparent !important; /* HILANGKAN BLOK WARNA */
-            box-shadow: none !important;
-            padding: 0 !important; 
-            font-weight: 600;
+            border: none !important; background: transparent !important; font-weight: 600; padding: 0;
         }
         body.pdf-mode .btn-delete { display: none; }
-        body.pdf-mode ::placeholder { color: transparent; }
+        /* Border PDF */
+        body.pdf-mode table.table th, body.pdf-mode table.table td {
+            border: 1px solid #000 !important;
+        }
     </style>
 </head>
 <body>
 
 <div class="container" id="contentArea">
     <h1 class="title has-text-centered has-text-warning-dark mb-5">
-        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">Realtime</span>
+        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V4 Grouped</span>
     </h1>
 
     <div class="history-section no-print">
         <h6 class="title is-6 mb-3"><i class="fa-solid fa-cloud"></i> Riwayat Tersimpan (Server)</h6>
         <div class="field has-addons">
             <div class="control is-expanded">
-                <input class="input is-small" type="text" id="historyTitle" placeholder="Judul (ex: Makan Siang Jumat)">
+                <input class="input is-small" type="text" id="historyTitle" placeholder="Judul (ex: Makan Siang)">
             </div>
             <div class="control">
-                <button class="button is-small is-link" id="btnSaveHistory">
-                    <i class="fa-solid fa-save"></i>&nbsp; Simpan ke Cloud
-                </button>
+                <button class="button is-small is-link" id="btnSaveHistory"><i class="fa-solid fa-save"></i>&nbsp; Simpan</button>
             </div>
         </div>
         <div id="historyListContainer" style="max-height: 150px; overflow-y: auto;">
-            <p class="has-text-centered is-size-7 my-2"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Riwayat...</p>
+            <p class="has-text-centered is-size-7 my-2"><i class="fa-solid fa-spinner fa-spin"></i> Memuat...</p>
         </div>
     </div>
 
@@ -124,9 +117,7 @@
                         <input class="input" type="text" id="price" placeholder="0" onkeyup="formatRupiahInput(this)">
                     </p>
                     <p class="control">
-                        <button class="button is-warning" id="btnSubmit">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+                        <button class="button is-warning" id="btnSubmit"><i class="fa-solid fa-plus"></i></button>
                     </p>
                 </div>
             </div>
@@ -138,8 +129,8 @@
     </div>
 
     <div class="table-container">
-        <h5 class="subtitle is-6 mb-2">🛒 Daftar Pesanan (Live Edit)</h5>
-        <table class="table is-fullwidth is-striped is-hoverable">
+        <h5 class="subtitle is-6 mb-2">🛒 Daftar Pesanan (Group by Name)</h5>
+        <table class="table is-fullwidth is-striped is-hoverable is-bordered">
             <thead>
                 <tr>
                     <th style="width: 20%;">Nama</th>
@@ -159,14 +150,10 @@
         <h5 class="subtitle is-5 mb-3"><i class="fa-solid fa-cash-register"></i> Kasir & Pembayaran</h5>
         
         <div class="field is-horizontal no-print">
-            <div class="field-label is-normal">
-                <label class="label">Pajak/Ongkir (%):</label>
-            </div>
+            <div class="field-label is-normal"><label class="label">Pajak/Ongkir (%):</label></div>
             <div class="field-body">
                 <div class="field">
-                    <p class="control">
-                        <input class="input" type="number" id="taxPercent" value="0" style="width: 80px;" oninput="renderSummary()">
-                    </p>
+                    <p class="control"><input class="input" type="number" id="taxPercent" value="0" style="width: 80px;" oninput="renderSummary()"></p>
                 </div>
             </div>
         </div>
@@ -253,7 +240,7 @@
         return parseFloat(str.replace(/\./g, '')) || 0;
     }
 
-    // 2. REALTIME LISTENER
+    // 2. REALTIME LISTENER (Diurutkan Waktu dulu)
     const q = query(dbOrders, orderBy("timestamp", "asc"));
     
     onSnapshot(q, (snapshot) => {
@@ -265,11 +252,25 @@
             if(data.paid === undefined) data.paid = 0; 
             globalOrders.push(data);
         });
+
+        // --- UPDATE LOGIC GROUPING DISINI ---
+        // Kita sort manual di Client Side berdasarkan NAMA (Ascending)
+        // Biar kalau Evan nambah, dia kumpul sama Evan lainnya
+        globalOrders.sort((a, b) => {
+            // Sort nama dulu
+            const nameA = a.name.toLowerCase();
+            const nameB = b.name.toLowerCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            // Kalau nama sama, sort berdasarkan waktu
+            return a.timestamp - b.timestamp;
+        });
+
         renderMainTable();
         renderSummary(); 
     });
 
-    // 3. RENDER TABLE (CLEAN FOR PDF)
+    // 3. RENDER TABLE (WITH BORDERS)
     function renderMainTable() {
         const tbody = document.getElementById('listBody');
         tbody.innerHTML = '';
@@ -279,12 +280,17 @@
             return;
         }
 
+        let prevName = ""; // Untuk cek grouping
+
         globalOrders.forEach(data => {
             const tr = document.createElement('tr');
             tr.className = "row-update";
             
             const priceFormatted = data.price.toLocaleString('id-ID');
 
+            // Logic Nama: Kalau sama dengan atasnya, visualnya dibikin agak beda (opsional),
+            // Tapi User minta "posisi harus sama di bawah nama Evan", sorting sudah menangani ini.
+            
             tr.innerHTML = `
                 <td style="vertical-align:middle;"><strong>${data.name}</strong></td>
                 <td>
@@ -322,7 +328,7 @@
         });
     }
 
-    // 4. RENDER SUMMARY
+    // 4. RENDER SUMMARY (KASIR)
     window.renderSummary = function() {
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
         const tbody = document.getElementById('summaryBody');
@@ -408,9 +414,11 @@
             await addDoc(dbOrders, {
                 name: name, item: item, note: note, price: parseInt(price), paid: 0, timestamp: Date.now() 
             });
+            // Hapus menu & harga, tapi NAMA JANGAN DIHAPUS biar enak input lagi
             document.getElementById('item').value = ''; 
             document.getElementById('note').value = ''; 
             document.getElementById('price').value = '';
+            document.getElementById('item').focus();
         } catch (e) { alert("Error: " + e.message); }
     });
 
@@ -497,7 +505,7 @@
             grouped[k].paid += (o.paid || 0);
         });
 
-        let text = "*LIST NITIP MAKAN REALTIME*\n------------------\n";
+        let text = "*LIST NITIP MAKAN*\n------------------\n";
         for(let k in grouped) {
             const p = grouped[k];
             const tax = p.total * (taxRate/100);
@@ -512,7 +520,7 @@
             text += "\n";
         }
         text += "------------------\n";
-        text += `*TOTAL TAGIHAN: ${document.getElementById('grandTotalBill').innerText}*\n`;
+        text += `*TOTAL TAGIHAN WARUNG: ${document.getElementById('grandTotalBill').innerText}*\n`;
         if(rek) text += `\nBayar ke: ${rek}`;
         navigator.clipboard.writeText(text).then(() => alert("Teks WA Tersalin!"));
     }
@@ -520,11 +528,11 @@
     window.downloadPDF = () => {
         document.body.classList.add('pdf-mode');
         const el = document.getElementById('contentArea');
-        html2pdf().set({ margin: 10, filename: 'Rekap_Nitip_Realtime_V3.pdf' }).from(el).save().then(() => {
+        html2pdf().set({ margin: 10, filename: 'Rekap_Nitip_Makan.pdf' }).from(el).save().then(() => {
             document.body.classList.remove('pdf-mode');
         });
     }
 </script>
 
 </body>
-    </html>
+                        </html>
