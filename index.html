@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitip Makan Pro V7 (Full Edit)</title>
+    <title>Nitip Makan Pro V8 (Smart Print)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -21,14 +21,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Editable Input */
-        .input-edit { 
-            border: 1px dashed #dbdbdb; 
-            background: #fafafa; 
-            padding: 4px 8px; 
-            width: 100%; 
-            border-radius: 4px; 
-            font-size: 0.95em;
-        }
+        .input-edit { border: 1px dashed #dbdbdb; background: #fafafa; padding: 4px 8px; width: 100%; border-radius: 4px; font-size: 0.95em; }
         .input-edit:focus { border-color: #3273dc; outline: none; background: white; }
 
         /* Input Pembayaran */
@@ -43,24 +36,18 @@
             .no-print, .history-section { display: none !important; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             
-            /* HILANGKAN INPUT BOX SAAT PRINT JADI TEXT BIASA */
             .input-edit, .input-pay, #rekInfo { 
-                border: none !important; 
-                background: transparent !important; 
-                box-shadow: none !important;
-                padding: 0 !important; 
-                font-weight: 600; 
+                border: none !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; font-weight: 600; 
             }
             #rekInfo { font-size: 1.1em; color: #333; }
             .buttons, .btn-delete { display: none !important; }
             
-            /* BORDER KOTAK-KOTAK TEGAS */
+            /* Class Khusus untuk Sembunyikan Rekening jika Kosong */
+            .hidden-if-empty-print { display: none !important; }
+
+            /* BORDER TEGAS */
             table.table { border: 1px solid #000 !important; }
-            table.table th, table.table td {
-                border: 1px solid #000 !important;
-                padding: 8px !important;
-                color: #000 !important;
-            }
+            table.table th, table.table td { border: 1px solid #000 !important; padding: 8px !important; color: #000 !important; }
         }
 
         /* PDF MODE Logic */
@@ -69,16 +56,17 @@
             border: none !important; background: transparent !important; font-weight: 600; padding: 0;
         }
         body.pdf-mode .btn-delete, body.pdf-mode .buttons { display: none !important; }
-        body.pdf-mode table.table th, body.pdf-mode table.table td {
-            border: 1px solid #000 !important;
-        }
+        body.pdf-mode table.table th, body.pdf-mode table.table td { border: 1px solid #000 !important; }
+        
+        /* Logic Sembunyi Rekening di PDF */
+        body.pdf-mode .hidden-if-empty-print { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container" id="contentArea">
     <h1 class="title has-text-centered has-text-warning-dark mb-5">
-        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V7</span>
+        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V8 Smart Print</span>
     </h1>
 
     <div class="history-section no-print">
@@ -98,27 +86,14 @@
 
     <div class="box no-print" style="background:#fffdf0; border:1px solid #ffeebb;">
         <div class="columns is-multiline">
-            <div class="column is-3">
-                <label class="label is-small">Nama</label>
-                <input class="input" type="text" id="name" placeholder="Nama">
-            </div>
-            <div class="column is-3">
-                <label class="label is-small">Menu</label>
-                <input class="input" type="text" id="item" placeholder="Menu">
-            </div>
-            <div class="column is-3">
-                <label class="label is-small">Catatan</label>
-                <input class="input" type="text" id="note" placeholder="Pedas/Tidak">
-            </div>
+            <div class="column is-3"><label class="label is-small">Nama</label><input class="input" type="text" id="name" placeholder="Nama"></div>
+            <div class="column is-3"><label class="label is-small">Menu</label><input class="input" type="text" id="item" placeholder="Menu"></div>
+            <div class="column is-3"><label class="label is-small">Catatan</label><input class="input" type="text" id="note" placeholder="Pedas/Tidak"></div>
             <div class="column is-3">
                 <label class="label is-small">Harga</label>
                 <div class="field has-addons">
-                    <p class="control is-expanded">
-                        <input class="input" type="text" id="price" placeholder="0" onkeyup="formatRupiahInput(this)">
-                    </p>
-                    <p class="control">
-                        <button class="button is-warning" id="btnSubmit"><i class="fa-solid fa-plus"></i></button>
-                    </p>
+                    <p class="control is-expanded"><input class="input" type="text" id="price" placeholder="0" onkeyup="formatRupiahInput(this)"></p>
+                    <p class="control"><button class="button is-warning" id="btnSubmit"><i class="fa-solid fa-plus"></i></button></p>
                 </div>
             </div>
         </div>
@@ -130,16 +105,11 @@
 
     <div class="table-container">
         <div class="level mb-2">
-            <div class="level-left">
-                <h5 class="subtitle is-6">🛒 Daftar Pesanan</h5>
-            </div>
+            <div class="level-left"><h5 class="subtitle is-6">🛒 Daftar Pesanan</h5></div>
             <div class="level-right no-print">
-                <button class="button is-danger is-light is-small" id="btnClearAllTop">
-                    <i class="fa-solid fa-trash-can"></i>&nbsp; Hapus Semua Pesanan
-                </button>
+                <button class="button is-danger is-light is-small" id="btnClearAllTop"><i class="fa-solid fa-trash-can"></i>&nbsp; Hapus Semua Pesanan</button>
             </div>
         </div>
-        
         <table class="table is-fullwidth is-striped is-hoverable is-bordered">
             <thead>
                 <tr>
@@ -158,7 +128,6 @@
 
     <div class="box" style="background-color: #fcfcfc;">
         <h5 class="subtitle is-5 mb-3"><i class="fa-solid fa-cash-register"></i> Kasir & Pembayaran</h5>
-        
         <div class="field is-horizontal no-print">
             <div class="field-label is-normal"><label class="label">Pajak/Ongkir (%):</label></div>
             <div class="field-body">
@@ -167,7 +136,6 @@
                 </div>
             </div>
         </div>
-
         <div class="table-container">
             <table class="table is-fullwidth is-bordered">
                 <thead>
@@ -204,9 +172,10 @@
         </div>
     </div>
 
-    <div class="box mt-5" style="border: 1px solid #ccc;">
-        <label class="label is-small has-text-grey">Info Rekening Bandar:</label>
-        <input class="input is-medium has-text-weight-bold has-text-link" type="text" id="rekInfo" placeholder="BCA 123456 a.n Budi" oninput="localStorage.setItem('rekInfo', this.value)" style="border:none; box-shadow:none; padding-left:0;">
+    <div class="box mt-5" id="rekContainer" style="border: 1px solid #ccc;">
+        <label class="label is-small has-text-grey">Info Rekening:</label>
+        <input class="input is-medium has-text-weight-bold has-text-link" type="text" id="rekInfo" placeholder="BCA 123456 a.n Budi" 
+               oninput="handleRekInput()" style="border:none; box-shadow:none; padding-left:0;">
     </div>
 
     <div class="buttons is-centered no-print mt-5">
@@ -237,6 +206,31 @@
 
     let globalOrders = [];
 
+    // --- LOGIC SMART REKENING ---
+    // Dipasang di window supaya bisa dipanggil HTML
+    window.handleRekInput = function() {
+        const val = document.getElementById('rekInfo').value;
+        const container = document.getElementById('rekContainer');
+        
+        // Simpan ke memory
+        localStorage.setItem('rekInfo', val);
+
+        // Logic CSS: Kalau kosong, tambah class hidden-if-empty-print
+        if(!val.trim()) {
+            container.classList.add('hidden-if-empty-print');
+        } else {
+            container.classList.remove('hidden-if-empty-print');
+        }
+    }
+
+    // Init saat load page
+    if(localStorage.getItem('rekInfo')) {
+        document.getElementById('rekInfo').value = localStorage.getItem('rekInfo');
+    }
+    // Jalanin sekali pas load biar status class-nya bener
+    window.handleRekInput();
+
+
     // 1. HELPERS FORMATTER
     window.formatRupiahInput = function(el) {
         let val = el.value.replace(/[^0-9]/g, '');
@@ -254,8 +248,7 @@
     
     onSnapshot(q, (snapshot) => {
         document.getElementById('loading').style.display = 'none';
-        globalOrders = []; // Reset Variable Global
-        
+        globalOrders = [];
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             data.id = docSnap.id; 
@@ -263,7 +256,6 @@
             globalOrders.push(data);
         });
 
-        // Sorting (Nama A-Z)
         globalOrders.sort((a, b) => {
             const nameA = a.name.toLowerCase();
             const nameB = b.name.toLowerCase();
@@ -289,23 +281,16 @@
         globalOrders.forEach(data => {
             const tr = document.createElement('tr');
             tr.className = "row-update";
-            
             const priceFormatted = data.price.toLocaleString('id-ID');
 
             tr.innerHTML = `
                 <td style="vertical-align:middle;"><strong>${data.name}</strong></td>
-                <td>
-                    <input type="text" class="input input-edit input-item" value="${data.item}" id="item-${data.id}">
-                </td>
-                <td>
-                    <input type="text" class="input input-edit input-note" value="${data.note || ''}" id="note-${data.id}" placeholder="-">
-                </td>
+                <td><input type="text" class="input input-edit input-item" value="${data.item}" id="item-${data.id}"></td>
+                <td><input type="text" class="input input-edit input-note" value="${data.note || ''}" id="note-${data.id}" placeholder="-"></td>
                 <td>
                     <div style="display:flex; align-items:center;">
                         <span class="is-size-7 mr-1 no-print">Rp</span>
-                        <input type="text" inputmode="numeric" class="input input-edit input-price" 
-                               value="${priceFormatted}" 
-                               id="price-${data.id}">
+                        <input type="text" inputmode="numeric" class="input input-edit input-price" value="${priceFormatted}" id="price-${data.id}">
                     </div>
                 </td>
                 <td class="no-print has-text-centered" style="vertical-align:middle;">
@@ -314,33 +299,22 @@
             `;
             tbody.appendChild(tr);
 
-            // --- LISTENERS ---
-            // 1. Edit Menu
-            tr.querySelector(`#item-${data.id}`).addEventListener('change', (e) => {
-                updateDoc(doc(db, "orders", data.id), { item: e.target.value });
-            });
-            // 2. Edit Catatan (NEW)
-            tr.querySelector(`#note-${data.id}`).addEventListener('change', (e) => {
-                updateDoc(doc(db, "orders", data.id), { note: e.target.value });
-            });
-            // 3. Edit Harga
+            tr.querySelector(`#item-${data.id}`).addEventListener('change', (e) => updateDoc(doc(db, "orders", data.id), { item: e.target.value }));
+            tr.querySelector(`#note-${data.id}`).addEventListener('change', (e) => updateDoc(doc(db, "orders", data.id), { note: e.target.value }));
+            
             const inputPrice = tr.querySelector(`#price-${data.id}`);
             inputPrice.addEventListener('keyup', (e) => formatRupiahInput(e.target));
-            inputPrice.addEventListener('change', (e) => {
-                updateDoc(doc(db, "orders", data.id), { price: cleanToNumber(e.target.value) });
-            });
-            // 4. Hapus
-            tr.querySelector(`.btn-delete`).addEventListener('click', () => {
-                if(confirm("Hapus pesanan ini?")) deleteDoc(doc(db, "orders", data.id));
-            });
+            inputPrice.addEventListener('change', (e) => updateDoc(doc(db, "orders", data.id), { price: cleanToNumber(e.target.value) }));
+            
+            tr.querySelector(`.btn-delete`).addEventListener('click', () => { if(confirm("Hapus pesanan ini?")) deleteDoc(doc(db, "orders", data.id)); });
         });
     }
 
-    // 4. RENDER SUMMARY (FIX GHOST DATA)
+    // 4. RENDER SUMMARY
     window.renderSummary = function() {
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
         const tbody = document.getElementById('summaryBody');
-        tbody.innerHTML = ''; // Force clear
+        tbody.innerHTML = '';
         
         if(globalOrders.length === 0) {
             document.getElementById('grandTotalBill').innerText = "Rp 0";
@@ -381,10 +355,7 @@
             tr.innerHTML = `
                 <td style="vertical-align:middle;"><strong>${person.displayName}</strong></td>
                 <td style="vertical-align:middle;">Rp ${finalBill.toLocaleString('id-ID')}</td>
-                <td>
-                    <input type="text" inputmode="numeric" class="input input-pay is-small" 
-                           value="${paidFormatted}" placeholder="0">
-                </td>
+                <td><input type="text" inputmode="numeric" class="input input-pay is-small" value="${paidFormatted}" placeholder="0"></td>
                 <td style="vertical-align:middle;">${statusHtml}</td>
             `;
             tbody.appendChild(tr);
@@ -402,11 +373,9 @@
 
         document.getElementById('grandTotalBill').innerText = "Rp " + totalBillGlobal.toLocaleString('id-ID');
         document.getElementById('grandTotalCash').innerText = "Rp " + totalCashGlobal.toLocaleString('id-ID');
-        
         const totalChange = totalCashGlobal - totalBillGlobal;
         const boxChange = document.getElementById('grandTotalChange');
         const boxContainer = document.getElementById('boxChangeColor');
-
         boxChange.innerText = "Rp " + totalChange.toLocaleString('id-ID');
         if(totalChange < 0) {
             boxContainer.classList.remove('is-info'); boxContainer.classList.add('is-danger');
@@ -416,105 +385,66 @@
         }
     }
 
-    // 5. SUBMIT DATA
+    // 5. SUBMIT
     document.getElementById('btnSubmit').addEventListener('click', async () => {
         const name = document.getElementById('name').value;
         const item = document.getElementById('item').value;
         const note = document.getElementById('note').value;
         const price = cleanToNumber(document.getElementById('price').value);
-
         if(!name || !item || !price) { alert("Data kurang!"); return; }
-
         try {
-            await addDoc(dbOrders, {
-                name: name, item: item, note: note, price: parseInt(price), paid: 0, timestamp: Date.now() 
-            });
-            // Reset input (nama dibiarkan biar cepat input lagi)
-            document.getElementById('item').value = ''; 
-            document.getElementById('note').value = ''; 
-            document.getElementById('price').value = '';
-            document.getElementById('item').focus();
+            await addDoc(dbOrders, { name, item, note, price: parseInt(price), paid: 0, timestamp: Date.now() });
+            document.getElementById('item').value = ''; document.getElementById('note').value = ''; document.getElementById('price').value = ''; document.getElementById('item').focus();
         } catch (e) { alert("Error: " + e.message); }
     });
 
-    // 6. FUNGSI HAPUS SEMUA (BATCH DELETE)
+    // 6. DELETE ALL
     document.getElementById('btnClearAllTop').addEventListener('click', async () => {
-        if(!confirm("Yakin hapus SEMUA pesanan aktif saat ini? Data akan hilang permanen untuk semua orang.")) return;
-        const q = query(dbOrders);
-        const snapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        snapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-        });
-        await batch.commit();
+        if(!confirm("Hapus SEMUA pesanan aktif?")) return;
+        const q = query(dbOrders); const snapshot = await getDocs(q); const batch = writeBatch(db);
+        snapshot.forEach((doc) => batch.delete(doc.ref)); await batch.commit();
     });
 
-    // 7. HISTORY CLOUD
+    // 7. HISTORY
     const qHistory = query(dbHistory, orderBy("savedAt", "desc"));
     onSnapshot(qHistory, (snapshot) => {
         const container = document.getElementById('historyListContainer');
         container.innerHTML = '';
         if(snapshot.empty) { container.innerHTML = '<p class="has-text-grey is-size-7">Belum ada riwayat.</p>'; return; }
-
         snapshot.forEach(docSnap => {
             const h = docSnap.data();
             const div = document.createElement('div');
             div.className = "history-item";
             div.innerHTML = `
                 <div><strong>${h.title}</strong><br><span class="is-size-7 has-text-grey">${h.date} • ${h.orders.length} item</span></div>
-                <div>
-                    <button class="button is-small is-info is-light btn-load">Load</button>
-                    <button class="button is-small is-danger is-light btn-del-hist"><i class="fa-solid fa-trash"></i></button>
-                </div>
+                <div><button class="button is-small is-info is-light btn-load">Load</button><button class="button is-small is-danger is-light btn-del-hist"><i class="fa-solid fa-trash"></i></button></div>
             `;
             container.appendChild(div);
             div.querySelector('.btn-load').addEventListener('click', () => loadHistoryToActive(h));
-            div.querySelector('.btn-del-hist').addEventListener('click', (e) => {
-                e.stopPropagation();
-                if(confirm("Hapus riwayat?")) deleteDoc(doc(db, "history_sessions", docSnap.id));
-            });
+            div.querySelector('.btn-del-hist').addEventListener('click', (e) => { e.stopPropagation(); if(confirm("Hapus?")) deleteDoc(doc(db, "history_sessions", docSnap.id)); });
         });
     });
 
     document.getElementById('btnSaveHistory').addEventListener('click', async () => {
         const title = document.getElementById('historyTitle').value;
-        if(!title) { alert("Judul kosong!"); return; }
-        if(globalOrders.length === 0) { alert("Data kosong!"); return; }
-        try {
-            await addDoc(dbHistory, {
-                title: title, date: new Date().toLocaleDateString('id-ID'), savedAt: Date.now(), orders: globalOrders, tax: document.getElementById('taxPercent').value
-            });
-            alert("Disimpan ke Cloud!");
-            document.getElementById('historyTitle').value = '';
-        } catch(e) { alert("Gagal: " + e.message); }
+        if(!title || globalOrders.length === 0) { alert("Judul/Data kosong!"); return; }
+        try { await addDoc(dbHistory, { title, date: new Date().toLocaleDateString('id-ID'), savedAt: Date.now(), orders: globalOrders, tax: document.getElementById('taxPercent').value }); alert("Tersimpan!"); document.getElementById('historyTitle').value = ''; } catch(e) { alert("Gagal: " + e.message); }
     });
 
     async function loadHistoryToActive(historyData) {
-        if(!confirm(`Load "${historyData.title}"? Data aktif akan tertimpa!`)) return;
-        const qOrders = query(dbOrders);
-        const snapshot = await getDocs(qOrders);
-        const batchDelete = writeBatch(db);
-        snapshot.forEach((doc) => batchDelete.delete(doc.ref));
-        await batchDelete.commit();
-
+        if(!confirm(`Load "${historyData.title}"?`)) return;
+        const qOrders = query(dbOrders); const snapshot = await getDocs(qOrders); const batchDel = writeBatch(db);
+        snapshot.forEach((doc) => batchDel.delete(doc.ref)); await batchDel.commit();
         const batchAdd = writeBatch(db);
-        historyData.orders.forEach(o => {
-            const newRef = doc(dbOrders); 
-            batchAdd.set(newRef, {
-                name: o.name, item: o.item, note: o.note || '', price: o.price, paid: o.paid || 0, timestamp: o.timestamp || Date.now()
-            });
-        });
+        historyData.orders.forEach(o => batchAdd.set(doc(dbOrders), { name: o.name, item: o.item, note: o.note || '', price: o.price, paid: o.paid || 0, timestamp: o.timestamp || Date.now() }));
         await batchAdd.commit();
         document.getElementById('taxPercent').value = historyData.tax || 0;
     }
-
-    if(localStorage.getItem('rekInfo')) document.getElementById('rekInfo').value = localStorage.getItem('rekInfo');
 
     window.copyWA = () => {
         const rek = document.getElementById('rekInfo').value;
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
         let grouped = {};
-        
         globalOrders.forEach(o => {
             const k = o.name.toLowerCase();
             if(!grouped[k]) grouped[k] = {name: o.name, items:[], total:0, paid:0};
@@ -522,7 +452,6 @@
             grouped[k].total += o.price;
             grouped[k].paid += (o.paid || 0);
         });
-
         let text = "*LIST NITIP MAKAN*\n------------------\n";
         for(let k in grouped) {
             const p = grouped[k];
@@ -546,9 +475,7 @@
     window.downloadPDF = () => {
         document.body.classList.add('pdf-mode');
         const el = document.getElementById('contentArea');
-        html2pdf().set({ margin: 10, filename: 'Rekap_Nitip_Makan.pdf' }).from(el).save().then(() => {
-            document.body.classList.remove('pdf-mode');
-        });
+        html2pdf().set({ margin: 10, filename: 'Rekap_Nitip_Makan.pdf' }).from(el).save().then(() => { document.body.classList.remove('pdf-mode'); });
     }
 </script>
 
