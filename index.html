@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitip Makan Pro V4 (Grouped)</title>
+    <title>Nitip Makan Pro V5 (Stable)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -38,20 +38,23 @@
         .history-section { background: #f0f3f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
         .history-item { cursor: pointer; border-bottom: 1px solid #ddd; padding: 8px; background: white; margin-bottom: 2px; }
 
-        /* --- MODE PRINT & PDF (BORDERS TEBAL) --- */
+        /* --- MODE PRINT & PDF (FIXED REKENING & GHOST DATA) --- */
         @media print {
             .no-print, .history-section { display: none !important; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             
-            /* HILANGKAN INPUT BOX SAAT PRINT */
-            .input-edit, .input-pay { 
+            /* HILANGKAN INPUT BOX SAAT PRINT JADI TEXT BIASA */
+            .input-edit, .input-pay, #rekInfo { 
                 border: none !important; 
                 background: transparent !important; 
                 box-shadow: none !important;
                 padding: 0 !important; 
                 font-weight: 600; 
             }
-            .buttons, .btn-delete { display: none; }
+            /* Info Rekening diperbesar dikit pas print */
+            #rekInfo { font-size: 1.1em; color: #333; }
+
+            .buttons, .btn-delete { display: none !important; }
             
             /* BORDER KOTAK-KOTAK TEGAS */
             table.table { border: 1px solid #000 !important; }
@@ -64,10 +67,10 @@
 
         /* PDF MODE Logic */
         body.pdf-mode .no-print, body.pdf-mode .history-section { display: none !important; }
-        body.pdf-mode .input-edit, body.pdf-mode .input-pay { 
+        body.pdf-mode .input-edit, body.pdf-mode .input-pay, body.pdf-mode #rekInfo { 
             border: none !important; background: transparent !important; font-weight: 600; padding: 0;
         }
-        body.pdf-mode .btn-delete { display: none; }
+        body.pdf-mode .btn-delete, body.pdf-mode .buttons { display: none !important; }
         /* Border PDF */
         body.pdf-mode table.table th, body.pdf-mode table.table td {
             border: 1px solid #000 !important;
@@ -78,7 +81,7 @@
 
 <div class="container" id="contentArea">
     <h1 class="title has-text-centered has-text-warning-dark mb-5">
-        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V4 Grouped</span>
+        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V5 Stable</span>
     </h1>
 
     <div class="history-section no-print">
@@ -194,16 +197,16 @@
         </div>
     </div>
 
-    <div class="box no-print mt-5">
-        <label class="label is-small">Info Rekening Bandar:</label>
-        <input class="input is-small mb-3" type="text" id="rekInfo" placeholder="BCA 123456 a.n Budi" oninput="localStorage.setItem('rekInfo', this.value)">
-        
-        <div class="buttons is-centered">
-            <button class="button is-success" onclick="copyWA()"> <i class="fa-brands fa-whatsapp"></i> &nbsp; Copy WA</button>
-            <button class="button is-danger" onclick="downloadPDF()"> <i class="fa-solid fa-file-pdf"></i> &nbsp; PDF</button>
-            <button class="button is-dark" onclick="window.print()"> <i class="fa-solid fa-print"></i> &nbsp; Print</button>
-            <button class="button is-white is-small is-outlined" id="btnReset" style="border:none;">Reset</button>
-        </div>
+    <div class="box mt-5" style="border: 1px solid #ccc;">
+        <label class="label is-small has-text-grey">Info Rekening Bandar:</label>
+        <input class="input is-medium has-text-weight-bold has-text-link" type="text" id="rekInfo" placeholder="BCA 123456 a.n Budi" oninput="localStorage.setItem('rekInfo', this.value)" style="border:none; box-shadow:none; padding-left:0;">
+    </div>
+
+    <div class="buttons is-centered no-print mt-5">
+        <button class="button is-success" onclick="copyWA()"> <i class="fa-brands fa-whatsapp"></i> &nbsp; Copy WA</button>
+        <button class="button is-danger" onclick="downloadPDF()"> <i class="fa-solid fa-file-pdf"></i> &nbsp; PDF</button>
+        <button class="button is-dark" onclick="window.print()"> <i class="fa-solid fa-print"></i> &nbsp; Print</button>
+        <button class="button is-white is-small is-outlined" id="btnReset" style="border:none;">Reset</button>
     </div>
 </div>
 
@@ -240,12 +243,15 @@
         return parseFloat(str.replace(/\./g, '')) || 0;
     }
 
-    // 2. REALTIME LISTENER (Diurutkan Waktu dulu)
+    // 2. REALTIME LISTENER
     const q = query(dbOrders, orderBy("timestamp", "asc"));
     
     onSnapshot(q, (snapshot) => {
         document.getElementById('loading').style.display = 'none';
-        globalOrders = [];
+        
+        // --- FIX DATA HANTU: RESET TOTAL GLOBAL VARIABLE ---
+        globalOrders = []; 
+        
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             data.id = docSnap.id; 
@@ -253,19 +259,16 @@
             globalOrders.push(data);
         });
 
-        // --- UPDATE LOGIC GROUPING DISINI ---
-        // Kita sort manual di Client Side berdasarkan NAMA (Ascending)
-        // Biar kalau Evan nambah, dia kumpul sama Evan lainnya
+        // Sorting Client Side (Nama A-Z)
         globalOrders.sort((a, b) => {
-            // Sort nama dulu
             const nameA = a.name.toLowerCase();
             const nameB = b.name.toLowerCase();
             if (nameA < nameB) return -1;
             if (nameA > nameB) return 1;
-            // Kalau nama sama, sort berdasarkan waktu
             return a.timestamp - b.timestamp;
         });
 
+        // --- FORCE RENDER (Bersihkan dulu baru isi) ---
         renderMainTable();
         renderSummary(); 
     });
@@ -273,14 +276,12 @@
     // 3. RENDER TABLE (WITH BORDERS)
     function renderMainTable() {
         const tbody = document.getElementById('listBody');
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // Pastikan bersih dulu
         
         if (globalOrders.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="has-text-centered has-text-grey">Belum ada pesanan.</td></tr>`;
             return;
         }
-
-        let prevName = ""; // Untuk cek grouping
 
         globalOrders.forEach(data => {
             const tr = document.createElement('tr');
@@ -288,9 +289,6 @@
             
             const priceFormatted = data.price.toLocaleString('id-ID');
 
-            // Logic Nama: Kalau sama dengan atasnya, visualnya dibikin agak beda (opsional),
-            // Tapi User minta "posisi harus sama di bawah nama Evan", sorting sudah menangani ini.
-            
             tr.innerHTML = `
                 <td style="vertical-align:middle;"><strong>${data.name}</strong></td>
                 <td>
@@ -328,12 +326,22 @@
         });
     }
 
-    // 4. RENDER SUMMARY (KASIR)
+    // 4. RENDER SUMMARY (FIX GHOST DATA)
     window.renderSummary = function() {
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
         const tbody = document.getElementById('summaryBody');
+        
+        // --- FIX DATA HANTU: Kosongkan tbody secara eksplisit di awal ---
         tbody.innerHTML = '';
         
+        // Jika data kosong, reset kotak duit dan berhenti
+        if(globalOrders.length === 0) {
+            document.getElementById('grandTotalBill').innerText = "Rp 0";
+            document.getElementById('grandTotalCash').innerText = "Rp 0";
+            document.getElementById('grandTotalChange').innerText = "Rp 0";
+            return;
+        }
+
         const grouped = {};
         let totalBillGlobal = 0;
         let totalCashGlobal = 0;
@@ -414,7 +422,6 @@
             await addDoc(dbOrders, {
                 name: name, item: item, note: note, price: parseInt(price), paid: 0, timestamp: Date.now() 
             });
-            // Hapus menu & harga, tapi NAMA JANGAN DIHAPUS biar enak input lagi
             document.getElementById('item').value = ''; 
             document.getElementById('note').value = ''; 
             document.getElementById('price').value = '';
@@ -535,4 +542,4 @@
 </script>
 
 </body>
-                        </html>
+</html>
