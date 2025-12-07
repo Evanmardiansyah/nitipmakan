@@ -3,23 +3,523 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IG Carousel Maker</title>
+    <title>Nitip Makan Pro - PDF Download</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        canvas { border: 1px solid #ccc; max-width: 100%; }
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        /* CSS DESIGN UTAMA */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        
+        /* Grid Input */
+        .input-group { 
+            display: grid; 
+            grid-template-columns: 1fr 1.2fr 1.2fr 0.8fr auto; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        input, button, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; }
+        button { cursor: pointer; background-color: #3498db; color: white; border: none; font-weight: bold; transition: 0.2s; white-space: nowrap; }
+        button:hover { background-color: #2980b9; }
+        
+        /* Tabel */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; vertical-align: middle; }
+        th { background-color: #f8f9fa; }
+        
+        .note-text { font-style: italic; color: #7f8c8d; font-size: 0.9em; }
+
+        /* Editable Input */
+        .edit-input { width: 100px; padding: 5px; border: 1px solid transparent; border-radius: 4px; background: #fdfdfd; font-weight: 500; color: #2c3e50; }
+        .edit-input:hover { border-color: #bdc3c7; background: white; }
+        .edit-input:focus { border-color: #3498db; outline: none; background: #fff; box-shadow: 0 0 0 2px rgba(52,152,219,0.1); }
+
+        /* Kasir Area */
+        .summary-section { margin-top: 40px; border-top: 3px solid #34495e; padding-top: 20px; }
+        .tax-input { width: 80px; }
+        .pay-input { width: 140px; border: 1px solid #27ae60; color: #27ae60; font-weight: bold; letter-spacing: 0.5px; }
+        
+        /* Money Box */
+        .money-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .box-item { padding: 20px; border-radius: 8px; color: white; text-align: center; }
+        .box-bill { background-color: #e67e22; }
+        .box-cash { background-color: #27ae60; }
+        .box-change { background-color: #3498db; }
+        .box-item h2 { margin: 10px 0 0 0; font-size: 20px; }
+
+        /* Status Text */
+        .kembalian-plus { color: green; font-weight: bold; }
+        .kembalian-minus { color: red; font-weight: bold; }
+        .kembalian-zero { color: #aaa; }
+
+        /* History Area */
+        .history-section { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px dashed #bdc3c7; }
+        .history-controls { display: flex; gap: 10px; }
+        .history-list { list-style: none; padding: 0; margin: 10px 0 0 0; max-height: 150px; overflow-y: auto; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px; margin-bottom: 5px; border-radius: 4px; border-left: 4px solid #3498db; font-size: 0.9em; }
+        .btn-del-hist { background: #e74c3c; padding: 2px 8px; font-size: 11px; }
+
+        /* Payment Info Input */
+        .payment-info-box { margin-bottom: 15px; background: #e8f8f5; padding: 10px; border-radius: 5px; border-left: 5px solid #1abc9c; }
+        .payment-input { width: 100%; border: none; background: transparent; font-weight: bold; color: #16a085; outline: none; }
+
+        /* Action Buttons Bottom */
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 30px; }
+        .btn-wa { background-color: #25D366; } 
+        .btn-wa:hover { background-color: #128C7E; }
+        .btn-print { background-color: #34495e; }
+        .btn-pdf { background-color: #e74c3c; } /* Warna Merah PDF */
+        .btn-pdf:hover { background-color: #c0392b; }
+
+        /* --- PRINT & PDF LOGIC --- */
+        .print-only-val, .print-only-price { display: none; }
+
+        /* Style saat tombol PRINT browser ditekan */
+        @media print {
+            .no-print, .history-section, .action-buttons { display: none !important; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            .edit-input, .pay-input { display: none !important; }
+            .print-only-val, .print-only-price { display: inline-block !important; font-weight: bold; }
+            .price-cell-wrapper { border: none; }
+            .input-group { display: none; } 
+            .money-box { grid-template-columns: 1fr 1fr 1fr !important; gap: 10px; }
+        }
+
+        /* Style saat tombol DOWNLOAD PDF ditekan (Manual Class) */
+        /* Kita duplikasi logic @media print tapi pakai class .pdf-mode */
+        body.pdf-mode .no-print, 
+        body.pdf-mode .history-section, 
+        body.pdf-mode .action-buttons { display: none !important; }
+        
+        body.pdf-mode .container { box-shadow: none; border: none; padding: 0; }
+        body.pdf-mode .edit-input, 
+        body.pdf-mode .pay-input { display: none !important; }
+        
+        body.pdf-mode .print-only-val, 
+        body.pdf-mode .print-only-price { display: inline-block !important; font-weight: bold; }
+        
+        body.pdf-mode .price-cell-wrapper { border: none; }
+        body.pdf-mode .input-group { display: none; }
+        body.pdf-mode .money-box { grid-template-columns: 1fr 1fr 1fr !important; gap: 10px; }
+        
+        @media (max-width: 600px) {
+            .input-group { grid-template-columns: 1fr; }
+            .money-box { grid-template-columns: 1fr; }
+            .action-buttons { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h1>Buat Carousel Instagram</h1>
-    
-    <input type="file" id="uploadImage" accept="image/*">
-    <br><br>
-    
-    <canvas id="myCanvas"></canvas>
-    <br><br>
-    
-    <button id="downloadBtn" style="display:none;">Download Hasil</button>
 
-    <script src="script.js"></script>
+<div class="container" id="contentArea">
+    <h1>&#128221; Nitip Makan Pro</h1>
+
+    <div class="history-section no-print">
+        <div class="history-controls">
+            <input type="text" id="historyTitle" placeholder="Judul Riwayat (ex: Makan Siang)" style="flex:1;">
+            <button onclick="saveHistory()" style="background:#27ae60;">&#128190; Simpan</button>
+            <button onclick="clearCurrent()" style="background:#95a5a6;">Reset</button>
+        </div>
+        <div id="historyListContainer"></div>
+    </div>
+
+    <div class="input-group no-print">
+        <input type="text" id="name" placeholder="Nama Pemesan" required>
+        <input type="text" id="item" placeholder="Menu" required>
+        <input type="text" id="note" placeholder="Catatan (Opsional)" style="font-style:italic;">
+        <input type="text" id="price" inputmode="numeric" placeholder="Harga (Rp)" onkeyup="formatRupiahInput(this)" required>
+        <button onclick="addOrder()">+ Tambah</button>
+    </div>
+
+    <h3>&#128722; Daftar Pesanan <span id="currentTitleDisplay" style="font-weight:normal; color:#7f8c8d; font-size:0.8em;"></span></h3>
+    <table id="orderTable">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Menu</th>
+                <th>Catatan</th>
+                <th>Harga (Edit)</th>
+                <th class="no-print" style="width:50px;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="listBody"></tbody>
+    </table>
+
+    <div class="summary-section">
+        <h3>&#128176; Kasir & Pembayaran</h3>
+        
+        <div class="payment-info-box no-print">
+            <label style="font-size: 0.8em; color: #16a085;">INFO PEMBAYARAN / REKENING BANDAR:</label>
+            <input type="text" id="paymentInfo" class="payment-input" placeholder="Contoh: BCA 12345678 a.n Evan Mardiansyah" oninput="savePaymentInfoLocally()">
+        </div>
+
+        <div class="no-print" style="margin-bottom: 15px; background: #eee; padding: 10px; border-radius: 5px;">
+            <label><strong>Pajak / Ongkir (%):</strong> </label>
+            <input type="number" id="taxPercent" class="tax-input" value="0" oninput="renderSummary()">
+        </div>
+
+        <table id="summaryTable">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Tagihan (+Pajak)</th>
+                    <th>Bayar (Tunai)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+        </table>
+
+        <div class="money-box">
+            <div class="box-item box-bill">
+                <small>Total Bayar ke Warung</small>
+                <h2 id="grandTotalBill">Rp 0</h2>
+            </div>
+            <div class="box-item box-cash">
+                <small>Uang Fisik Terkumpul</small>
+                <h2 id="grandTotalCash">Rp 0</h2>
+            </div>
+            <div class="box-item box-change">
+                <small>Sisa Uang OB</small>
+                <h2 id="grandTotalChange">Rp 0</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons no-print">
+        <button class="btn-wa" onclick="copyToWhatsApp()">
+            &#128241; Copy WA
+        </button>
+        <button class="btn-pdf" onclick="downloadPDF()">
+            &#128196; Download PDF
+        </button>
+        <button class="btn-print" onclick="window.print()">
+            &#128424; Cetak
+        </button>
+    </div>
+</div>
+
+<script>
+    let orders = [];
+    let payments = {}; 
+    let currentTotalBill = 0;
+    const STORAGE_KEY = 'nitip_makan_history_v1';
+    const PAYMENT_INFO_KEY = 'nitip_makan_payment_info';
+
+    // === PDF DOWNLOAD FUNCTION ===
+    function downloadPDF() {
+        // 1. Tambahkan class 'pdf-mode' ke body agar CSS tampilan cetak aktif
+        document.body.classList.add('pdf-mode');
+
+        const element = document.getElementById('contentArea');
+        
+        // 2. Settingan PDF
+        const opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     'Rekap_Nitip_Makan.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // 3. Generate PDF lalu hapus class 'pdf-mode'
+        html2pdf().set(opt).from(element).save().then(function(){
+            document.body.classList.remove('pdf-mode');
+        });
+    }
+
+    // === STANDARD LOGIC ===
+    const formatRp = (num) => "Rp " + num.toLocaleString('id-ID');
+
+    window.onload = function() {
+        loadHistoryList();
+        const savedPayment = localStorage.getItem(PAYMENT_INFO_KEY);
+        if(savedPayment) document.getElementById('paymentInfo').value = savedPayment;
+    }
+
+    function savePaymentInfoLocally() {
+        const val = document.getElementById('paymentInfo').value;
+        localStorage.setItem(PAYMENT_INFO_KEY, val);
+    }
+
+    function formatRupiahInput(el) {
+        let val = el.value.replace(/[^0-9]/g, '');
+        el.value = val !== "" ? parseInt(val, 10).toLocaleString('id-ID') : "";
+    }
+
+    function cleanToNumber(str) {
+        if (!str) return 0;
+        return parseFloat(str.replace(/\./g, '')) || 0;
+    }
+
+    function addOrder() {
+        const name = document.getElementById('name').value.trim();
+        const item = document.getElementById('item').value;
+        const note = document.getElementById('note').value; 
+        const priceStr = document.getElementById('price').value;
+        const price = cleanToNumber(priceStr);
+
+        if (!name || !item || !price) { alert("Lengkapi data!"); return; }
+
+        orders.push({ name, item, note, price });
+        
+        document.getElementById('item').value = '';
+        document.getElementById('note').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('item').focus();
+
+        renderList();
+        renderSummary();
+    }
+
+    function updatePrice(index, valStr) {
+        const newPrice = cleanToNumber(valStr);
+        orders[index].price = newPrice;
+        const printEl = document.getElementById(`print-price-${index}`);
+        if(printEl) printEl.innerText = formatRp(newPrice);
+        renderSummary();
+    }
+
+    function deleteOrder(index) {
+        orders.splice(index, 1);
+        renderList();
+        renderSummary();
+    }
+
+    function clearCurrent() {
+        if(confirm("Reset form?")) {
+            orders = []; payments = {};
+            document.getElementById('currentTitleDisplay').innerText = "";
+            renderList(); renderSummary();
+        }
+    }
+
+    function renderList() {
+        const tbody = document.getElementById('listBody');
+        tbody.innerHTML = '';
+        orders.forEach((o, i) => {
+            const noteDisplay = o.note ? o.note : '-';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${o.name}</td>
+                    <td>${o.item}</td>
+                    <td><span class="note-text">${noteDisplay}</span></td>
+                    <td>
+                        <div class="price-cell-wrapper" style="display:flex; align-items:center;">
+                            <span class="no-print" style="margin-right:5px; color:#7f8c8d; font-size:0.9em;">Rp</span>
+                            <input type="text" class="edit-input" value="${o.price.toLocaleString('id-ID')}" inputmode="numeric" onkeyup="formatRupiahInput(this); updatePrice(${i}, this.value)">
+                            <span id="print-price-${i}" class="print-only-price">${formatRp(o.price)}</span>
+                        </div>
+                    </td>
+                    <td class="no-print"><button class="btn-delete" style="background:#e74c3c; padding:5px 10px; font-size:12px;" onclick="deleteOrder(${i})">X</button></td>
+                </tr>`;
+        });
+    }
+
+    function renderSummary() {
+        const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
+        const tbody = document.getElementById('summaryBody');
+        const grouped = {};
+
+        orders.forEach(o => {
+            const k = o.name.toLowerCase();
+            if (!grouped[k]) grouped[k] = { name: o.name, total: 0 };
+            grouped[k].total += o.price;
+        });
+
+        let html = '';
+        let totalBill = 0;
+
+        for (const k in grouped) {
+            const p = grouped[k];
+            const tax = p.total * (taxRate / 100);
+            const final = p.total + tax;
+            totalBill += final;
+            const paid = payments[k] || 0;
+            const paidDisplay = paid > 0 ? paid.toLocaleString('id-ID') : '';
+
+            html += `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${formatRp(final)}</td>
+                    <td>
+                        <input type="text" id="in-${k}" class="pay-input no-print" value="${paidDisplay}" inputmode="numeric" data-bill="${final}" onkeyup="formatRupiahInput(this); calcChange('${k}')" placeholder="0">
+                        <span id="pr-${k}" class="print-only-val">${paid>0?formatRp(paid):'-'}</span>
+                    </td>
+                    <td id="st-${k}" class="kembalian-zero">-</td>
+                </tr>`;
+        }
+        tbody.innerHTML = html;
+        document.getElementById('grandTotalBill').innerText = formatRp(totalBill);
+        currentTotalBill = totalBill;
+        for (const k in grouped) calcChange(k);
+        calcTotalCash();
+    }
+
+    function calcChange(key) {
+        const input = document.getElementById(`in-${key}`);
+        if(!input) return;
+        const paid = cleanToNumber(input.value);
+        const bill = parseFloat(input.getAttribute('data-bill'));
+        payments[key] = paid;
+
+        const prEl = document.getElementById(`pr-${key}`);
+        if(prEl) prEl.innerText = paid > 0 ? formatRp(paid) : '-';
+
+        const stEl = document.getElementById(`st-${key}`);
+        const change = paid - bill;
+
+        if (paid === 0) {
+            stEl.className = 'kembalian-zero'; stEl.innerText = '-';
+        } else if (change < 0) {
+            stEl.className = 'kembalian-minus'; stEl.innerText = "Kurang " + formatRp(Math.abs(change));
+        } else {
+            stEl.className = 'kembalian-plus'; stEl.innerText = "Kembali " + formatRp(change);
+        }
+        calcTotalCash();
+    }
+
+    function calcTotalCash() {
+        let totalCash = 0;
+        for (let k in payments) totalCash += payments[k];
+        document.getElementById('grandTotalCash').innerText = formatRp(totalCash);
+        
+        const totalChange = totalCash - currentTotalBill;
+        const changeBox = document.getElementById('grandTotalChange');
+        changeBox.innerText = formatRp(totalChange);
+        
+        if(totalChange < 0) {
+            changeBox.style.color = "#ffcccc"; 
+            changeBox.innerText = "Kurang " + formatRp(Math.abs(totalChange));
+        } else {
+            changeBox.style.color = "white";
+        }
+    }
+
+    // === FITUR WA UPDATE ===
+    function copyToWhatsApp() {
+        if(orders.length === 0) { alert("Belum ada pesanan!"); return; }
+
+        const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
+        const paymentInfo = document.getElementById('paymentInfo').value;
+        const grouped = {};
+
+        orders.forEach(o => {
+            const k = o.name.toLowerCase();
+            if (!grouped[k]) grouped[k] = { name: o.name, items: [], total: 0 };
+            grouped[k].items.push(`${o.item} (${formatRp(o.price)})`);
+            grouped[k].total += o.price;
+        });
+
+        let text = "*LIST PESANAN NITIP MAKAN*\n";
+        text += "--------------------------------\n";
+
+        for (const k in grouped) {
+            const p = grouped[k];
+            text += `*${p.name}*\n`;
+            p.items.forEach(item => { text += `• ${item}\n`; });
+            text += "\n";
+        }
+
+        text += "--------------------------------\n";
+        text += "*TOTAL & STATUS BAYAR*\n";
+        
+        for (const k in grouped) {
+            const p = grouped[k];
+            const tax = p.total * (taxRate / 100);
+            const final = p.total + tax;
+            const paid = payments[k] || 0;
+            const change = paid - final;
+
+            text += `• ${p.name}: Tagihan ${formatRp(final)}\n`;
+            
+            if (paid > 0) {
+                let statusKembali = change >= 0 ? `Kembali: ${formatRp(change)}` : `Kurang: ${formatRp(Math.abs(change))}`;
+                text += `   └ (Tunai: ${formatRp(paid)} | ${statusKembali})\n`;
+            } else {
+                text += `   └ (Belum Bayar)\n`;
+            }
+        }
+        
+        if(taxRate > 0) text += `\n_(Termasuk pajak/ongkir ${taxRate}%)_\n`;
+        if(paymentInfo) {
+            text += "\n--------------------------------\n";
+            text += "*PEMBAYARAN KE:*\n";
+            text += `${paymentInfo}\n`;
+        }
+
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Teks berhasil disalin! Paste di WA Grup.");
+        }, () => {
+            alert("Browser tidak support copy.");
+        });
+    }
+
+    // === HISTORY FUNCTIONS ===
+    function saveHistory() {
+        const title = document.getElementById('historyTitle').value.trim();
+        if(!title) { alert("Judul kosong!"); return; }
+        if(orders.length === 0) { alert("Data kosong!"); return; }
+
+        const newData = {
+            id: Date.now(),
+            title: title,
+            date: new Date().toLocaleDateString('id-ID'),
+            orders: orders,
+            payments: payments,
+            tax: document.getElementById('taxPercent').value
+        };
+
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        history.unshift(newData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        
+        alert("Disimpan!");
+        document.getElementById('historyTitle').value = '';
+        loadHistoryList();
+    }
+
+    function loadHistoryList() {
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const container = document.getElementById('historyListContainer');
+        if(history.length === 0) { container.innerHTML = '<small style="color:#aaa">Belum ada riwayat.</small>'; return; }
+        let html = '<ul class="history-list">';
+        history.forEach((h, index) => {
+            html += `<li class="history-item">
+                        <div style="flex:1; cursor:pointer;" onclick="restoreData(${index})">
+                            <strong>${h.title}</strong>
+                            <span style="display:block; font-size:0.8em; color:#777;">${h.date} • ${h.orders.length} Item</span>
+                        </div>
+                        <button class="btn-del-hist" onclick="deleteHistory(${index})">Hapus</button>
+                    </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    function restoreData(index) {
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const data = history[index];
+        if(confirm(`Load "${data.title}"?`)) {
+            orders = data.orders;
+            payments = data.payments || {}; 
+            document.getElementById('taxPercent').value = data.tax || 0;
+            document.getElementById('currentTitleDisplay').innerText = `— ${data.title}`;
+            renderList(); renderSummary();
+        }
+    }
+
+    function deleteHistory(index) {
+        if(confirm("Hapus?")) {
+            let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+            history.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            loadHistoryList();
+        }
+    }
+</script>
+
 </body>
 </html>
