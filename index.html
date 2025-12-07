@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitip Makan Pro V6 (Hapus Semua)</title>
+    <title>Nitip Makan Pro V7 (Full Edit)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -78,7 +78,7 @@
 
 <div class="container" id="contentArea">
     <h1 class="title has-text-centered has-text-warning-dark mb-5">
-        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V6</span>
+        <i class="fa-solid fa-utensils"></i> Nitip Makan Pro <span class="tag is-warning is-light">V7</span>
     </h1>
 
     <div class="history-section no-print">
@@ -145,7 +145,7 @@
                 <tr>
                     <th style="width: 20%;">Nama</th>
                     <th style="width: 30%;">Menu (Edit)</th>
-                    <th style="width: 20%;">Catatan</th>
+                    <th style="width: 20%;">Catatan (Edit)</th>
                     <th style="width: 20%;">Harga (Edit)</th>
                     <th class="no-print has-text-centered" style="width: 10%;">Aksi</th>
                 </tr>
@@ -297,8 +297,8 @@
                 <td>
                     <input type="text" class="input input-edit input-item" value="${data.item}" id="item-${data.id}">
                 </td>
-                <td style="vertical-align:middle;">
-                    <span class="is-size-7 has-text-grey">${data.note || '-'}</span>
+                <td>
+                    <input type="text" class="input input-edit input-note" value="${data.note || ''}" id="note-${data.id}" placeholder="-">
                 </td>
                 <td>
                     <div style="display:flex; align-items:center;">
@@ -314,14 +314,22 @@
             `;
             tbody.appendChild(tr);
 
+            // --- LISTENERS ---
+            // 1. Edit Menu
             tr.querySelector(`#item-${data.id}`).addEventListener('change', (e) => {
                 updateDoc(doc(db, "orders", data.id), { item: e.target.value });
             });
+            // 2. Edit Catatan (NEW)
+            tr.querySelector(`#note-${data.id}`).addEventListener('change', (e) => {
+                updateDoc(doc(db, "orders", data.id), { note: e.target.value });
+            });
+            // 3. Edit Harga
             const inputPrice = tr.querySelector(`#price-${data.id}`);
             inputPrice.addEventListener('keyup', (e) => formatRupiahInput(e.target));
             inputPrice.addEventListener('change', (e) => {
                 updateDoc(doc(db, "orders", data.id), { price: cleanToNumber(e.target.value) });
             });
+            // 4. Hapus
             tr.querySelector(`.btn-delete`).addEventListener('click', () => {
                 if(confirm("Hapus pesanan ini?")) deleteDoc(doc(db, "orders", data.id));
             });
@@ -429,15 +437,11 @@
         } catch (e) { alert("Error: " + e.message); }
     });
 
-    // 6. FUNGSI HAPUS SEMUA (BATCH DELETE) - TOMBOL BARU DI ATAS
+    // 6. FUNGSI HAPUS SEMUA (BATCH DELETE)
     document.getElementById('btnClearAllTop').addEventListener('click', async () => {
         if(!confirm("Yakin hapus SEMUA pesanan aktif saat ini? Data akan hilang permanen untuk semua orang.")) return;
-        
-        // Ambil semua data orders
         const q = query(dbOrders);
         const snapshot = await getDocs(q);
-        
-        // Buat Batch Delete (Kuat sampai 500 operasi sekaligus)
         const batch = writeBatch(db);
         snapshot.forEach((doc) => {
             batch.delete(doc.ref);
