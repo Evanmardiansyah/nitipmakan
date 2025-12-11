@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitip Makan Pro V9 (Material UI)</title>
+    <title>Nitip Makan Pro V11 (Text Fix)</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
@@ -13,59 +13,38 @@
     <style>
         :root {
             --primary-color: #4a90e2;
-            --accent-color: #f39c12;
             --bg-color: #f4f7f6;
-            --card-shadow: 0 8px 24px rgba(149, 157, 165, 0.1);
         }
 
         body { 
             background-color: var(--bg-color); 
             font-family: 'Poppins', sans-serif; 
             min-height: 100vh; 
-            padding: 10px; /* Padding dikit biar ga mentok di HP */
+            padding: 10px;
             color: #444;
         }
 
-        /* Container ala Material Card */
         .main-card { 
             max-width: 900px; 
             margin: 0 auto; 
             background: white; 
             padding: 25px; 
-            border-radius: 20px; /* Lebih rounded */
-            box-shadow: var(--card-shadow); 
+            border-radius: 20px; 
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.1); 
         }
 
-        h1.title { color: #2c3e50; letter-spacing: -0.5px; }
-
-        /* Input Styling yang Lebih Modern */
-        .input, .button { 
-            border-radius: 12px; /* Rounded button/input */
+        /* --- Input Style --- */
+        .input, .button, .textarea { 
+            border-radius: 12px; 
             box-shadow: none;
             transition: all 0.3s ease;
         }
-        .input:focus { 
+        .input:focus, .textarea:focus { 
             border-color: var(--primary-color); 
             box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1); 
         }
 
-        /* --- Section Styling --- */
-        .section-box {
-            background: #ffffff;
-            border: 1px solid #eee;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        }
-        .section-box.is-yellow { background: #fffbe6; border-color: #ffe58f; }
-
-        /* Loader */
-        .loader-wrapper { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
-        .custom-loader { width: 30px; height: 30px; border: 4px solid #eee; border-top: 4px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* --- Editable Inputs di Tabel --- */
+        /* --- TEXTAREA AUTO WRAP DI TABEL --- */
         .input-edit { 
             border: 1px solid transparent; 
             background: transparent; 
@@ -73,96 +52,63 @@
             width: 100%; 
             border-radius: 8px; 
             font-family: 'Poppins', sans-serif;
-            font-size: 0.95rem;
-            transition: 0.2s;
+            font-size: 0.9rem;
+            resize: none; /* Hilangkan grip resize */
+            overflow: hidden; /* Hilangkan scrollbar */
+            min-height: 40px; /* Tinggi minimal */
+            line-height: 1.4;
         }
         .input-edit:hover { background: #f9f9f9; border-color: #eee; }
         .input-edit:focus { background: white; border-color: var(--primary-color); outline: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* Input Uang Bayar */
-        .input-pay { 
-            border: 1px solid #e0e0e0; 
-            color: #27ae60; 
-            font-weight: 700; 
-            background: #fcfcfc;
-        }
-        .input-pay:focus { border-color: #27ae60; }
+        /* Uang Input */
+        .input-pay { border: 1px solid #e0e0e0; color: #27ae60; font-weight: 700; background: #fcfcfc; }
 
-        /* History Chips */
-        .history-item { 
-            background: white; 
-            padding: 12px; 
-            border-radius: 12px; 
-            border: 1px solid #eee;
-            margin-bottom: 8px; 
-            cursor: pointer; 
-            transition: 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .history-item:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-color: var(--primary-color); }
-
-        /* Kotak Duit Totalan */
-        .stat-card {
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+        /* Stat Cards */
+        .stat-card { border-radius: 16px; padding: 20px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .bg-orange { background: linear-gradient(135deg, #f1c40f, #f39c12); }
         .bg-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
         .bg-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
         .bg-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
 
-        /* Animasi Update */
-        @keyframes flash { 0% { background-color: #e3f2fd; } 100% { background-color: transparent; } }
-        .row-update { animation: flash 1.5s ease-out; }
-
-        /* --- RESPONSIVE MOBILE TWEAKS --- */
+        /* Mobile Fix */
         @media (max-width: 768px) {
             .main-card { padding: 15px; border-radius: 15px; }
-            .input, .button { font-size: 14px; }
-            
-            /* Table Responsive Scroll */
-            .table-container { 
-                border-radius: 12px; 
-                border: 1px solid #f0f0f0; 
-                overflow-x: auto; /* Scroll samping kalau tabel kepanjangan */
-            }
-            .table th { white-space: nowrap; background: #f8f9fa; color: #666; font-size: 13px; }
-            .table td { min-width: 100px; font-size: 13px; }
-            
-            /* Grid Input jadi 1 kolom di HP */
-            .input-group-mobile .column { padding-bottom: 5px; }
-            
-            /* Action Buttons Stack */
-            .buttons.is-centered { flex-direction: column; width: 100%; }
-            .buttons .button { width: 100%; margin-bottom: 10px; margin-left: 0 !important; }
+            .table-container { border: 1px solid #f0f0f0; border-radius: 12px; overflow-x: auto; }
+            /* Biar tabel ga lebar banget di HP tapi bisa scroll */
+            .table { min-width: 600px; } 
         }
 
-        /* --- PRINT MODE CLEAN --- */
+        /* --- PRINT FIX TEXT WRAP --- */
         @media print {
             body { background: white; padding: 0; }
             .main-card { box-shadow: none; border: none; padding: 0; margin: 0; max-width: 100%; }
             .no-print, .history-section, .buttons { display: none !important; }
-            .input-edit, .input-pay, #rekInfo { 
-                border: none !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; font-weight: 600; 
+            
+            /* Ubah tampilan textarea jadi seperti teks biasa saat print */
+            .input-edit {
+                border: none !important;
+                background: transparent !important;
+                padding: 2px !important;
+                resize: none;
+                height: auto !important; /* Tinggi otomatis ngikutin teks */
+                overflow: visible !important;
+                white-space: pre-wrap; /* Pastikan teks turun ke bawah */
+                font-size: 13px;
             }
-            #rekInfo { font-size: 14px; color: #333; }
+            
+            .input-pay, #rekInfo { border: none !important; background: transparent !important; padding: 0 !important; font-weight: 600; }
             .hidden-if-empty-print { display: none !important; }
-            table.table { border: 1px solid #000 !important; width: 100%; }
-            table.table th, table.table td { border: 1px solid #000 !important; padding: 5px !important; color: #000 !important; }
+            
+            table.table { border: 1px solid #000 !important; width: 100%; table-layout: fixed; }
+            table.table th, table.table td { 
+                border: 1px solid #000 !important; 
+                padding: 6px !important; 
+                color: #000 !important;
+                vertical-align: top; /* Teks mulai dari atas sel */
+                word-wrap: break-word; /* Paksa teks turun */
+            }
         }
-        
-        /* PDF Mode Logic */
-        body.pdf-mode .no-print, body.pdf-mode .history-section, body.pdf-mode .buttons { display: none !important; }
-        body.pdf-mode .input-edit, body.pdf-mode .input-pay, body.pdf-mode #rekInfo { 
-            border: none !important; background: transparent !important; font-weight: 600; padding: 0; 
-        }
-        body.pdf-mode .hidden-if-empty-print { display: none !important; }
-        body.pdf-mode table.table th, body.pdf-mode table.table td { border: 1px solid #000 !important; padding: 6px; }
     </style>
 </head>
 <body>
@@ -176,77 +122,44 @@
                 <span>Nitip Makan Pro</span>
             </span>
         </h1>
-        <span class="tag is-info is-light is-rounded">Realtime V9</span>
+        <span class="tag is-info is-light is-rounded">V11 Text Fix</span>
     </div>
 
-    <div class="history-section no-print">
-        <div class="level is-mobile mb-3">
-            <div class="level-left">
-                <h6 class="title is-7 has-text-grey is-uppercase" style="letter-spacing: 1px;">Cloud History</h6>
-            </div>
-        </div>
+    <div class="history-section no-print box" style="background:#f8f9fa;">
         <div class="field has-addons">
             <div class="control is-expanded">
-                <input class="input is-small" type="text" id="historyTitle" placeholder="Nama Sesi (ex: Makan Siang)">
+                <input class="input is-small" type="text" id="historyTitle" placeholder="Simpan sesi ini (ex: Makan Siang)">
             </div>
             <div class="control">
                 <button class="button is-small is-link" id="btnSaveHistory"><i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;Save</button>
             </div>
         </div>
-        <div id="historyListContainer" style="max-height: 120px; overflow-y: auto;">
-            <p class="has-text-centered is-size-7 my-2"><span class="custom-loader" style="width:15px; height:15px; border-width:2px; display:inline-block;"></span> Syncing...</p>
-        </div>
+        <div id="historyListContainer" class="mt-2" style="max-height: 100px; overflow-y: auto;"></div>
     </div>
 
-    <div class="section-box is-yellow no-print">
-        <div class="columns is-multiline input-group-mobile">
+    <div class="box no-print" style="background:#fffbe6; border:1px solid #ffe58f;">
+        <div class="columns is-multiline">
+            <div class="column is-3"><input class="input" type="text" id="name" placeholder="Nama"></div>
+            <div class="column is-3"><input class="input" type="text" id="item" placeholder="Menu Makanan"></div>
+            <div class="column is-3"><input class="input" type="text" id="note" placeholder="Catatan"></div>
             <div class="column is-3">
-                <label class="label is-size-7">Nama</label>
-                <div class="control has-icons-left">
-                    <input class="input" type="text" id="name" placeholder="Siapa?">
-                    <span class="icon is-small is-left"><i class="fa-solid fa-user"></i></span>
-                </div>
-            </div>
-            <div class="column is-3">
-                <label class="label is-size-7">Menu</label>
-                <div class="control has-icons-left">
-                    <input class="input" type="text" id="item" placeholder="Makan apa?">
-                    <span class="icon is-small is-left"><i class="fa-solid fa-burger"></i></span>
-                </div>
-            </div>
-            <div class="column is-3">
-                <label class="label is-size-7">Catatan (Opsional)</label>
-                <div class="control has-icons-left">
-                    <input class="input" type="text" id="note" placeholder="Pedas?">
-                    <span class="icon is-small is-left"><i class="fa-solid fa-pen"></i></span>
-                </div>
-            </div>
-            <div class="column is-3">
-                <label class="label is-size-7">Harga</label>
                 <div class="field has-addons">
-                    <div class="control is-expanded has-icons-left">
-                        <input class="input" type="text" id="price" placeholder="0" onkeyup="formatRupiahInput(this)">
-                        <span class="icon is-small is-left"><i class="fa-solid fa-tag"></i></span>
+                    <div class="control is-expanded">
+                        <input class="input" type="text" id="price" placeholder="Harga" onkeyup="formatRupiahInput(this)">
                     </div>
                     <div class="control">
-                        <button class="button is-warning has-text-white" id="btnSubmit">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
+                        <button class="button is-warning has-text-white" id="btnSubmit"><i class="fa-solid fa-paper-plane"></i></button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="loader-wrapper" id="loading">
-        <div class="custom-loader"></div>
-    </div>
+    <div id="loading" class="has-text-centered my-4"><i class="fa-solid fa-spinner fa-spin fa-2x has-text-grey-light"></i></div>
 
     <div class="mb-5">
         <div class="level is-mobile mb-2">
-            <div class="level-left">
-                <h5 class="subtitle is-6 has-text-weight-bold">🛒 Daftar Pesanan</h5>
-            </div>
+            <div class="level-left"><h5 class="subtitle is-6 has-text-weight-bold">🛒 Daftar Pesanan</h5></div>
             <div class="level-right no-print">
                 <button class="button is-danger is-light is-small is-rounded" id="btnClearAllTop">
                     <i class="fa-solid fa-trash-can"></i>&nbsp; Reset
@@ -255,7 +168,7 @@
         </div>
         
         <div class="table-container">
-            <table class="table is-fullwidth is-hoverable is-bordered">
+            <table class="table is-fullwidth is-bordered is-striped">
                 <thead>
                     <tr>
                         <th style="width: 20%;">Nama</th>
@@ -270,30 +183,23 @@
         </div>
     </div>
 
-    <hr style="background-color: #eee; height: 1px; border: none;">
+    <hr>
 
-    <div class="section-box">
+    <div class="box">
         <div class="level is-mobile mb-4">
-            <div class="level-left">
-                <h5 class="subtitle is-6 has-text-weight-bold">💰 Kasir</h5>
-            </div>
+            <div class="level-left"><h5 class="subtitle is-6 has-text-weight-bold">💰 Kasir</h5></div>
             <div class="level-right no-print">
                 <div class="field has-addons">
-                    <p class="control"><a class="button is-static is-small">Tax/Ongkir %</a></p>
+                    <p class="control"><a class="button is-static is-small">Tax %</a></p>
                     <p class="control"><input class="input is-small" type="number" id="taxPercent" value="0" style="width: 60px;" oninput="renderSummary()"></p>
                 </div>
             </div>
         </div>
 
         <div class="table-container mb-5">
-            <table class="table is-fullwidth is-bordered is-size-7-mobile">
+            <table class="table is-fullwidth is-bordered">
                 <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Tagihan</th>
-                        <th>Bayar (Tunai)</th>
-                        <th>Status</th>
-                    </tr>
+                    <tr><th>Nama</th><th>Tagihan</th><th>Bayar (Tunai)</th><th>Status</th></tr>
                 </thead>
                 <tbody id="summaryBody"></tbody>
             </table>
@@ -302,46 +208,35 @@
         <div class="columns is-multiline is-mobile">
             <div class="column is-4-tablet is-12-mobile">
                 <div class="stat-card bg-orange">
-                    <p class="is-size-7 has-text-weight-bold is-uppercase" style="opacity:0.9">Tagihan Warung</p>
+                    <p class="is-size-7 has-text-weight-bold is-uppercase">Tagihan Warung</p>
                     <h3 class="title is-4 has-text-white mt-1" id="grandTotalBill">Rp 0</h3>
                 </div>
             </div>
             <div class="column is-4-tablet is-6-mobile">
                 <div class="stat-card bg-green">
-                    <p class="is-size-7 has-text-weight-bold is-uppercase" style="opacity:0.9">Uang Fisik</p>
+                    <p class="is-size-7 has-text-weight-bold is-uppercase">Uang Fisik</p>
                     <h3 class="title is-5 has-text-white mt-1" id="grandTotalCash">Rp 0</h3>
                 </div>
             </div>
             <div class="column is-4-tablet is-6-mobile">
                 <div class="stat-card bg-blue" id="boxChangeColor">
-                    <p class="is-size-7 has-text-weight-bold is-uppercase" style="opacity:0.9">Sisa Uang OB</p>
+                    <p class="is-size-7 has-text-weight-bold is-uppercase">Sisa Uang OB</p>
                     <h3 class="title is-5 has-text-white mt-1" id="grandTotalChange">Rp 0</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="section-box py-3 mb-5" id="rekContainer" style="border-left: 4px solid var(--primary-color);">
-        <label class="label is-size-7 has-text-grey mb-1">Info Rekening:</label>
-        <input class="input is-shadowless borderless pl-0 has-text-weight-bold has-text-link" 
-               type="text" id="rekInfo" placeholder="Ketik disini (ex: BCA 123456 a.n Evan)" 
-               oninput="handleRekInput()" style="border:none; height:auto; padding:0; background:transparent;">
+    <div class="box py-3 mb-5" id="rekContainer" style="border-left: 4px solid #4a90e2;">
+        <label class="label is-size-7 has-text-grey mb-1">Info Rekening Bandar:</label>
+        <input class="input is-shadowless pl-0 has-text-weight-bold has-text-link" type="text" id="rekInfo" 
+               placeholder="Ketik disini (ex: BCA 123456 a.n Evan)" oninput="handleRekInput()" style="border:none; height:auto; padding:0; background:transparent;">
     </div>
 
     <div class="buttons is-centered no-print">
-        <button class="button is-success is-rounded" onclick="copyWA()">
-            <span class="icon"><i class="fa-brands fa-whatsapp"></i></span><span>Copy WA</span>
-        </button>
-        <button class="button is-danger is-rounded" onclick="downloadPDF()">
-            <span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>PDF</span>
-        </button>
-        <button class="button is-dark is-rounded" onclick="window.print()">
-            <span class="icon"><i class="fa-solid fa-print"></i></span><span>Print</span>
-        </button>
-    </div>
-    
-    <div class="has-text-centered no-print mt-4">
-        <small class="has-text-grey-light is-size-7">Nitip Makan App &copy; 2025</small>
+        <button class="button is-success is-rounded" onclick="copyWA()"><i class="fa-brands fa-whatsapp"></i>&nbsp; WA</button>
+        <button class="button is-danger is-rounded" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i>&nbsp; PDF</button>
+        <button class="button is-dark is-rounded" onclick="window.print()"><i class="fa-solid fa-print"></i>&nbsp; Print</button>
     </div>
 </div>
 
@@ -349,7 +244,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    // CONFIG FIREBASE (Sesuai request Agan)
+    // CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyBNsSyxMSrnKx8jWvXOZcItktBFjJ0wohU",
         authDomain: "nitipmakan-92043.firebaseapp.com",
@@ -366,18 +261,25 @@
 
     let globalOrders = [];
 
-    // --- SMART REKENING LOGIC ---
+    // --- REKENING LOGIC ---
     window.handleRekInput = function() {
         const val = document.getElementById('rekInfo').value;
-        const container = document.getElementById('rekContainer');
         localStorage.setItem('rekInfo', val);
+        const container = document.getElementById('rekContainer');
         if(!val.trim()) container.classList.add('hidden-if-empty-print');
         else container.classList.remove('hidden-if-empty-print');
     }
     if(localStorage.getItem('rekInfo')) document.getElementById('rekInfo').value = localStorage.getItem('rekInfo');
     window.handleRekInput();
 
-    // --- FORMATTER ---
+    // --- HELPER TEXTAREA AUTO RESIZE ---
+    // Fungsi sakti biar textarea membesar otomatis
+    window.autoResize = function(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+
+    // --- HELPER NUMBER ---
     window.formatRupiahInput = function(el) {
         let val = el.value.replace(/[^0-9]/g, '');
         el.value = val !== "" ? parseInt(val, 10).toLocaleString('id-ID') : "";
@@ -400,7 +302,7 @@
             globalOrders.push(data);
         });
 
-        // Sort by Name (Case Insensitive)
+        // Sort Name A-Z
         globalOrders.sort((a, b) => {
             const nameA = a.name.toLowerCase();
             const nameB = b.name.toLowerCase();
@@ -413,13 +315,13 @@
         renderSummary(); 
     });
 
-    // --- RENDER TABLE ---
+    // --- RENDER TABLE (TEXTAREA VERSION) ---
     function renderMainTable() {
         const tbody = document.getElementById('listBody');
         tbody.innerHTML = '';
         
         if (globalOrders.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="has-text-centered has-text-grey py-4">Belum ada pesanan. Yuk mulai input!</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="has-text-centered has-text-grey py-4">Belum ada pesanan.</td></tr>`;
             return;
         }
 
@@ -429,23 +331,34 @@
             const priceFormatted = data.price.toLocaleString('id-ID');
 
             tr.innerHTML = `
-                <td style="vertical-align:middle;"><strong class="has-text-grey-dark">${data.name}</strong></td>
-                <td><input type="text" class="input-edit" value="${data.item}" id="item-${data.id}"></td>
-                <td><input type="text" class="input-edit has-text-grey" value="${data.note || ''}" id="note-${data.id}" placeholder="-"></td>
-                <td>
+                <td style="vertical-align:top; padding-top:12px;"><strong>${data.name}</strong></td>
+                
+                <td style="padding:4px;">
+                    <textarea class="input-edit" id="item-${data.id}" rows="1" oninput="autoResize(this)">${data.item}</textarea>
+                </td>
+                
+                <td style="padding:4px;">
+                    <textarea class="input-edit has-text-grey" id="note-${data.id}" rows="1" placeholder="-" oninput="autoResize(this)">${data.note || ''}</textarea>
+                </td>
+                
+                <td style="vertical-align:top;">
                     <div style="display:flex; align-items:center;">
-                        <span class="is-size-7 mr-1 no-print has-text-grey-light">Rp</span>
-                        <input type="text" inputmode="numeric" class="input-edit has-text-weight-medium" 
+                        <span class="is-size-7 mr-1 no-print">Rp</span>
+                        <input type="text" inputmode="numeric" class="input-edit has-text-weight-bold" 
                                value="${priceFormatted}" id="price-${data.id}">
                     </div>
                 </td>
-                <td class="no-print has-text-centered" style="vertical-align:middle;">
-                    <button class="button is-small is-danger is-light is-rounded btn-delete" data-id="${data.id}">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
+                <td class="no-print has-text-centered" style="vertical-align:top; padding-top:10px;">
+                    <button class="button is-small is-danger is-light is-rounded btn-delete" data-id="${data.id}"><i class="fa-solid fa-times"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
+
+            // Trigger resize awal biar tinggi textarea pas
+            setTimeout(() => {
+                autoResize(tr.querySelector(`#item-${data.id}`));
+                autoResize(tr.querySelector(`#note-${data.id}`));
+            }, 100);
 
             // Listeners
             tr.querySelector(`#item-${data.id}`).addEventListener('change', (e) => updateDoc(doc(db, "orders", data.id), { item: e.target.value }));
@@ -453,7 +366,7 @@
             const inputPrice = tr.querySelector(`#price-${data.id}`);
             inputPrice.addEventListener('keyup', (e) => formatRupiahInput(e.target));
             inputPrice.addEventListener('change', (e) => updateDoc(doc(db, "orders", data.id), { price: cleanToNumber(e.target.value) }));
-            tr.querySelector(`.btn-delete`).addEventListener('click', () => { if(confirm("Hapus pesanan ini?")) deleteDoc(doc(db, "orders", data.id)); });
+            tr.querySelector(`.btn-delete`).addEventListener('click', () => { if(confirm("Hapus?")) deleteDoc(doc(db, "orders", data.id)); });
         });
     }
 
@@ -471,8 +384,7 @@
         }
 
         const grouped = {};
-        let totalBillGlobal = 0;
-        let totalCashGlobal = 0;
+        let totalBillGlobal = 0; let totalCashGlobal = 0;
 
         globalOrders.forEach(o => {
             const key = o.name.toLowerCase();
@@ -492,8 +404,8 @@
             const change = person.paid - finalBill;
             let statusHtml = '<span class="has-text-grey-light">-</span>';
             if(person.paid > 0) {
-                if(change >= 0) statusHtml = `<span class="tag is-success is-light has-text-weight-bold">Kembali Rp ${change.toLocaleString('id-ID')}</span>`;
-                else statusHtml = `<span class="tag is-danger is-light has-text-weight-bold">Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}</span>`;
+                if(change >= 0) statusHtml = `<span class="tag is-success is-light">Kembali Rp ${change.toLocaleString('id-ID')}</span>`;
+                else statusHtml = `<span class="tag is-danger is-light">Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}</span>`;
             }
 
             const paidFormatted = person.paid > 0 ? person.paid.toLocaleString('id-ID') : '';
@@ -520,20 +432,17 @@
 
         document.getElementById('grandTotalBill').innerText = "Rp " + totalBillGlobal.toLocaleString('id-ID');
         document.getElementById('grandTotalCash').innerText = "Rp " + totalCashGlobal.toLocaleString('id-ID');
-        
         const totalChange = totalCashGlobal - totalBillGlobal;
         const boxChange = document.getElementById('grandTotalChange');
         const boxContainer = document.getElementById('boxChangeColor');
-
         boxChange.innerText = "Rp " + totalChange.toLocaleString('id-ID');
         
-        // Ganti warna card Sisa Uang OB
-        boxContainer.className = "stat-card"; // reset class
+        boxContainer.className = "stat-card"; 
         if(totalChange < 0) {
-            boxContainer.classList.add('bg-red'); // Merah kalau nombok
+            boxContainer.classList.add('bg-red'); 
             boxChange.innerText = "Nombok Rp " + Math.abs(totalChange).toLocaleString('id-ID');
         } else {
-            boxContainer.classList.add('bg-blue'); // Biru kalau aman
+            boxContainer.classList.add('bg-blue');
         }
     }
 
@@ -543,22 +452,20 @@
         const item = document.getElementById('item').value;
         const note = document.getElementById('note').value;
         const price = cleanToNumber(document.getElementById('price').value);
-        if(!name || !item || !price) { alert("Nama, Menu, & Harga wajib diisi!"); return; }
+        if(!name || !item || !price) { alert("Isi data dulu!"); return; }
         try {
             await addDoc(dbOrders, { name, item, note, price: parseInt(price), paid: 0, timestamp: Date.now() });
-            // Reset fields except name
-            document.getElementById('item').value = ''; document.getElementById('note').value = ''; 
-            document.getElementById('price').value = ''; document.getElementById('item').focus();
+            document.getElementById('item').value = ''; document.getElementById('note').value = ''; document.getElementById('price').value = ''; document.getElementById('item').focus();
         } catch (e) { alert("Error: " + e.message); }
     });
 
     document.getElementById('btnClearAllTop').addEventListener('click', async () => {
-        if(!confirm("Yakin hapus SEMUA pesanan aktif?")) return;
+        if(!confirm("Reset semua pesanan?")) return;
         const q = query(dbOrders); const snapshot = await getDocs(q); const batch = writeBatch(db);
         snapshot.forEach((doc) => batch.delete(doc.ref)); await batch.commit();
     });
 
-    // --- HISTORY CLOUD ---
+    // --- HISTORY ---
     const qHistory = query(dbHistory, orderBy("savedAt", "desc"));
     onSnapshot(qHistory, (snapshot) => {
         const container = document.getElementById('historyListContainer');
@@ -569,10 +476,10 @@
             const div = document.createElement('div');
             div.className = "history-item";
             div.innerHTML = `
-                <div><strong class="is-size-7">${h.title}</strong><br><span class="is-size-7 has-text-grey-light" style="font-size:0.65rem !important;">${h.date} (${h.orders.length} items)</span></div>
+                <div><strong class="is-size-7">${h.title}</strong> <span class="is-size-7 has-text-grey">(${h.date})</span></div>
                 <div class="buttons are-small mb-0">
-                    <button class="button is-info is-light is-rounded btn-load" style="height: 24px;">Load</button>
-                    <button class="button is-danger is-light is-rounded btn-del-hist" style="height: 24px;"><i class="fa-solid fa-trash"></i></button>
+                    <button class="button is-info is-light is-rounded btn-load" style="height:24px;">Load</button>
+                    <button class="button is-danger is-light is-rounded btn-del-hist" style="height:24px;"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             container.appendChild(div);
@@ -583,12 +490,12 @@
 
     document.getElementById('btnSaveHistory').addEventListener('click', async () => {
         const title = document.getElementById('historyTitle').value;
-        if(!title || globalOrders.length === 0) { alert("Judul/Data kosong!"); return; }
+        if(!title || globalOrders.length === 0) { alert("Data/Judul kosong!"); return; }
         try { await addDoc(dbHistory, { title, date: new Date().toLocaleDateString('id-ID'), savedAt: Date.now(), orders: globalOrders, tax: document.getElementById('taxPercent').value }); alert("Tersimpan!"); document.getElementById('historyTitle').value = ''; } catch(e) { alert("Gagal: " + e.message); }
     });
 
     async function loadHistoryToActive(historyData) {
-        if(!confirm(`Load "${historyData.title}"? Data aktif akan tertimpa!`)) return;
+        if(!confirm(`Load "${historyData.title}"?`)) return;
         const qOrders = query(dbOrders); const snapshot = await getDocs(qOrders); const batchDel = writeBatch(db);
         snapshot.forEach((doc) => batchDel.delete(doc.ref)); await batchDel.commit();
         const batchAdd = writeBatch(db);
@@ -597,7 +504,7 @@
         document.getElementById('taxPercent').value = historyData.tax || 0;
     }
 
-    // --- SHARE & DOWNLOAD ---
+    // --- SHARE ---
     window.copyWA = () => {
         const rek = document.getElementById('rekInfo').value;
         const taxRate = parseFloat(document.getElementById('taxPercent').value) || 0;
